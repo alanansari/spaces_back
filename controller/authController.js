@@ -69,6 +69,11 @@ const sverify = async (req,res) => {
 
     if(user.mailedOTP==otp){
       res.status(200).json({success:true,msg:'OTP Verified!'});
+      const emailstatus=User.updateOne({email},{
+        $set:{
+          email_verify:true
+        }
+      })
     }else{
       res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
@@ -96,8 +101,72 @@ const login = async (req, res) => {
   }
 }
 
+const forgotpassword=async (req,res)=>{
+  try{
+    const {email}=req.body;
+
+    const user =await User.findOne({email});
+
+    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+    
+    sendotp(email);
+
+    var mailedOTP2;
+
+    async function sendotp(emailId){
+      const result =  await Auth(emailId, "Spaces");
+      if(result.success==true){
+        console.log('mail sent.');
+        mailedOTP2 = result.OTP;
+        }
+        const updated=await User.updateOne({email},{
+          $set:{
+            mailedOTP:mailedOTP2
+          }
+        })
+      }
+      return res.status(200).json({sucess: true,msg:'OTP sent'});
+      
+
+   }
+   catch(err){
+    console.log(err);
+   }
+}
+
+
+const changepassword=async (req,res)=>{
+  try{
+    const {email,newpassword}=req.body;
+    
+
+    const user =await User.findOne({email});
+
+    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+    
+      const encpassword=await bcrypt.hash(newpassword,12)
+      const updatepassword=user.updateOne({email},{
+        $set:{
+          password:encpassword
+        }
+      })
+      return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
+      
+
+   }
+
+   catch(err){
+    console.log(err);
+   }
+}
+
+
+
 module.exports = {
     signup,
     login,
-    sverify
+    sverify,
+    forgotpassword,
+    changepassword,
+
 }
