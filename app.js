@@ -11,8 +11,6 @@ const cors=require('cors')
 app.use(cors({origin:true}))
 
 
-
-
 app.use(express.json());
 
 // add mongodb database and then start server

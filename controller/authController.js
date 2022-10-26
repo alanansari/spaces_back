@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
+const {Auth} = require('two-step-auth');
+const { findOne } = require("../model/userModel");
 
 const signup = async (req,res)=>{
     try{
@@ -22,23 +24,58 @@ const signup = async (req,res)=>{
         }
 
         // email verification
-        
-        // encrypting password
-        const encryptedPassword = await bcrypt.hash(password, 12);
+        login(email);
 
-        // Create new user in database
-        const user = await User.create({
-        user_name,
-        email: email.toLowerCase(), // convert email to lowercase
-        password: encryptedPassword,
-        });
+        let mailedOTP;
 
-  
-        // return new user
-        res.status(201).json({sucess:true,msg:`Welcome to spaces! ${user_name}.`});
+        async function login(emailId){
+          const result =  await Auth(emailId, "Spaces");
+          if(result.success==true){
+            console.log('mail sent.');
+            mailedOTP = result.OTP;
+
+            // encrypting password
+              const encryptedPassword = await bcrypt.hash(password, 12);
+
+            // Create new user in database
+            const user = await User.create({
+            user_name,
+            email: email.toLowerCase(), // convert email to lowercase
+            password: encryptedPassword,
+            email_verify: false,
+            mailedOTP
+            });
+
+            // return new user
+            res.status(201).json({sucess:true,msg:`Welcome to spaces! ${user_name}. Check your mail`});
+
+          }else{
+            console.log('mail not sent.');
+          }
+        }
+
     } catch (err) {
       console.log(err);
     }
+}
+
+const sverify = async (req,res) => {
+  try{
+    const {email,otp} = req.body;
+
+    const user = await User.findOne({email});
+
+    if(!user) res.status(400).json({success:false,msg:'user not found by the given mail'});
+
+    if(user.mailedOTP==otp){
+      res.status(200).json({success:true,msg:'OTP Verified!'});
+    }else{
+      res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+    }
+     
+  }catch(err){
+    console.log(err);
+  }
 }
 
 const login = async (req, res) => {
@@ -61,5 +98,6 @@ const login = async (req, res) => {
 
 module.exports = {
     signup,
-    login
+    login,
+    sverify
 }
