@@ -69,6 +69,11 @@ const sverify = async (req,res) => {
 
     if(user.mailedOTP==otp){
       res.status(200).json({success:true,msg:'OTP Verified!'});
+      const emailstatus=User.updateOne({email},{
+        $set:{
+          email_verify:true
+        }
+      })
     }else{
       res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
@@ -100,8 +105,6 @@ const forgotpassword=async (req,res)=>{
   try{
     const {email}=req.body;
 
-    var t=email;
-
     const user =await User.findOne({email});
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
@@ -122,6 +125,7 @@ const forgotpassword=async (req,res)=>{
           }
         })
       }
+      return res.status(200).json({sucess: true,msg:'OTP sent'});
       
 
    }
@@ -130,33 +134,11 @@ const forgotpassword=async (req,res)=>{
    }
 }
 
-const verifyotp=async (req,res)=>{
-  try{
-    const {otp} = req.body;
-
-    const email=t
-
-    const user = await User.findOne({email});
-
-    if(!user) res.status(400).json({success:false,msg:'user not found by the given mail'});
-
-    if(user.mailedOTP==otp){
-      res.status(200).json({success:true,msg:'OTP Verified!'});
-    }else{
-      res.status(400).json({success:false,msg:'Wrong OTP entered.'});
-    }
-     
-  }catch(err){
-    console.log(err);
-  }
-
-}
 
 const changepassword=async (req,res)=>{
   try{
-    const {newpassword}=req.body;
+    const {email,newpassword}=req.body;
     
-    const email=t
 
     const user =await User.findOne({email});
 
@@ -168,6 +150,7 @@ const changepassword=async (req,res)=>{
           password:encpassword
         }
       })
+      return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
       
 
    }
@@ -185,6 +168,5 @@ module.exports = {
     sverify,
     forgotpassword,
     changepassword,
-    verifyotp
 
 }
