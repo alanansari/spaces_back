@@ -10,4 +10,10 @@ router.post('/signup/verify',authController.sverify);
 
 router.post('/login', authController.login);
 
+router.post('/forgotpassword',authController.forgotpassword)
+
+router.post('/forgotpassword/otpverify',authController.verifyotp)
+
+router.post('/forgotpassword/otpverify/changepassword',authController.changepassword)
+
 module.exports = router;

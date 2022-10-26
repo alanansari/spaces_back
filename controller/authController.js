@@ -130,9 +130,31 @@ const forgotpassword=async (req,res)=>{
    }
 }
 
+const verifyotp=async (req,res)=>{
+  try{
+    const {otp} = req.body;
+
+    const email=t
+
+    const user = await User.findOne({email});
+
+    if(!user) res.status(400).json({success:false,msg:'user not found by the given mail'});
+
+    if(user.mailedOTP==otp){
+      res.status(200).json({success:true,msg:'OTP Verified!'});
+    }else{
+      res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+    }
+     
+  }catch(err){
+    console.log(err);
+  }
+
+}
+
 const changepassword=async (req,res)=>{
   try{
-    const {otp,newpassword}=req.body;
+    const {newpassword}=req.body;
     
     const email=t
 
@@ -140,20 +162,15 @@ const changepassword=async (req,res)=>{
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
     
-    if(user.mailedOTP==otp){
       const encpassword=await bcrypt.hash(newpassword,12)
       const updatepassword=user.updateOne({email},{
         $set:{
           password:encpassword
         }
       })
-      res.status(200).json({success:true,msg:'OTP Verified!'});
-    }else{
-      res.status(400).json({success:false,msg:'Wrong OTP entered.'});
       
 
    }
-  }
 
    catch(err){
     console.log(err);
@@ -167,6 +184,7 @@ module.exports = {
     login,
     sverify,
     forgotpassword,
-    changepassword
+    changepassword,
+    verifyotp
 
 }
