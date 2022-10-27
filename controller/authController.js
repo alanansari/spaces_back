@@ -3,14 +3,27 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
 const { findOne } = require("../model/userModel");
+const regexval = require("../middleware/validate");
 
 const signup = async (req,res)=>{
     try{
         //get user input
         const {user_name,email,password} = req.body;
 
+        if (!(user_name && email && password)) {
+          return res.status(400).send("All inputs are required");
+        }
+
+        if(!regexval.validatemail(email)){
+          return res.status(400).send("Incorrect Email Format.");
+        }
+
+        if(!regexval.validatepass(password)){
+          return res.status(400).send("Incorrect Password Format.");
+        }
+
         // check if user email already exists
-        const oldMail = await User.findOne({ email });
+        const oldMail = await User.findOne({ email:email.toLowerCase() });
 
         if (oldMail&&oldMail.email_verify==true) {
             return res.status(409)
@@ -55,7 +68,7 @@ const signup = async (req,res)=>{
               expiryOTP : expiresat
               });
             }else{
-              const emailstatus= await User.updateOne({email},{
+              const emailstatus= await User.updateOne({email:email.toLowerCase()},{
                 $set:{
                   user_name,
                   password: encryptedPassword,
@@ -82,12 +95,16 @@ const sverify = async (req,res) => {
   try{
     const {email,otp} = req.body;
 
-    const user = await User.findOne({email});
+    if (!otp) {
+      res.status(400).send("Input is required");
+    }
+
+    const user = await User.findOne({email:email.toLowerCase()});
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
 
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
-      const emailstatus= await User.updateOne({email},{
+      const emailstatus= await User.updateOne({email:email.toLowerCase()},{
         $set:{
           email_verify:true,
           expiryOTP: Date.now()
@@ -110,7 +127,12 @@ const login = async (req, res) => {
     try {
       const { email, password } = req.body;
 
-      const user = await User.findOne({ email });
+      // validation for email and password inputs
+      if (!(email && password)) {
+        res.status(400).send("All inputs are required");
+      }
+
+      const user = await User.findOne({ email:email.toLowerCase() });
 
         if (!user||user.email_verify == false) return res.status(409)
             .json({sucess:false,msg:"This email doesn't have an account"});
@@ -129,7 +151,11 @@ const forgotpassword=async (req,res)=>{
   try{
     const {email}=req.body;
 
-    const user =await User.findOne({email});
+    if (!email) {
+      res.status(400).send("Input is required");
+    }
+
+    const user =await User.findOne({email:email.toLowerCase()});
 
     if (!user||user.email_verify==false) return res.status(409)
       .json({sucess:false,msg:"This email doesn't have an account"});
@@ -145,7 +171,7 @@ const forgotpassword=async (req,res)=>{
         mailedOTP2 = result.OTP;
         console.log(mailedOTP2);
         const expiresat = Date.now() + 300000;
-        const updated=await User.updateOne({email},{
+        const updated=await User.updateOne({email:email.toLowerCase()},{
           $set:{
             mailedOTP:mailedOTP2.toString(),
             expiryOTP: expiresat
@@ -166,14 +192,22 @@ const forgotpassword=async (req,res)=>{
 const changepassword=async (req,res)=>{
   try{
     const {email,newpassword}=req.body;
+
+    if (!(email && newpassword)) {
+      res.status(400).send("All inputs are required");
+    }
+
+    if(!regexval.validatepass(newpassword)){
+      return res.status(400).send("Incorrect Password Format.");
+    }
     
 
-    const user =await User.findOne({email});
+    const user =await User.findOne({email:email.toLowerCase()});
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
     
       const encpassword=await bcrypt.hash(newpassword,12)
-      const updatepassword=user.updateOne({email},{
+      const updatepassword=user.updateOne({email:email.toLowerCase()},{
         $set:{
           password:encpassword
         }
