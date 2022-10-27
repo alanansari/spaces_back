@@ -12,14 +12,21 @@ const signup = async (req,res)=>{
         // check if user email already exists
         const oldMail = await User.findOne({ email });
 
-        if (oldMail) {
-            return res.status(409).json({sucess:false,msg:"Email Already Exist."});
+        if (oldMail&&oldMail.email_verify==true) {
+            return res.status(409)
+              .json({sucess:false,msg:"User with this Email ID Already Exists."});
+        } else if(oldMail&&oldMail.email_verify==false&& oldMail.expiryOTP>Date.now() ){
+            return res.status(409)
+              .json({
+                sucess:false,
+                msg:"OTP already sent to Email ID wait for it to expire to send another request."
+              });
         }
 
         // check if username already exist
         const oldUser = await User.findOne({ user_name });
 
-        if (oldUser) {
+        if (oldUser&&oldUser.email_verify==true) {
             return res.status(409).send({sucess:false,msg:"Username Already Exist."});
         }
 
@@ -38,14 +45,25 @@ const signup = async (req,res)=>{
               const encryptedPassword = await bcrypt.hash(password, 12);
 
             // Create new user in database
-            const user = await User.create({
-            user_name,
-            email: email.toLowerCase(), // convert email to lowercase
-            password: encryptedPassword,
-            email_verify: false,
-            mailedOTP : mailedOTP.toString(),
-            expiryOTP : expiresat
-            });
+            if(!oldMail){
+              const user = await User.create({
+              user_name,
+              email: email.toLowerCase(), // convert email to lowercase
+              password: encryptedPassword,
+              email_verify: false,
+              mailedOTP : mailedOTP.toString(),
+              expiryOTP : expiresat
+              });
+            }else{
+              const emailstatus= await User.updateOne({email},{
+                $set:{
+                  user_name,
+                  password: encryptedPassword,
+                  mailedOTP : mailedOTP.toString(),
+                  expiryOTP : expiresat
+                }
+              });
+          }
 
             // return new user
             return res.status(201).json({sucess:true,msg:`Welcome to spaces! ${user_name}. Check your mail`});
@@ -94,7 +112,8 @@ const login = async (req, res) => {
 
       const user = await User.findOne({ email });
 
-        if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+        if (!user||user.email_verify == false) return res.status(409)
+            .json({sucess:false,msg:"This email doesn't have an account"});
 
         const result = await bcrypt.compare(password, user.password);
 
@@ -112,8 +131,9 @@ const forgotpassword=async (req,res)=>{
 
     const user =await User.findOne({email});
 
-    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
-    
+    if (!user||user.email_verify==false) return res.status(409)
+      .json({sucess:false,msg:"This email doesn't have an account"});
+
     sendotp(email);
 
     let mailedOTP2;
