@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
     email: { type: String,required:true, unique: true },
     password: { type: String },
     email_verify: {type: Boolean},
-    mailedOTP: {type: Number},
+    mailedOTP: {type: String},
+    expiryOTP: {type: Number},
     token: { type: String },
   });
 
