@@ -71,11 +71,12 @@ const sverify = async (req,res) => {
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{
-          email_verify:true
+          email_verify:true,
+          expiryOTP: Date.now()
         }
       });
       return res.status(200).json({success:true,msg:'OTP Verified!'});
-    }else if(user.mailedOTP===otp && user.expiryOTP < Date.now()){
+    }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
       return res.status(400).json({success:false,msg:'This OTP has expired'});
     }
     else{
@@ -122,14 +123,14 @@ const forgotpassword=async (req,res)=>{
       if(result.success==true){
         console.log('mail sent.');
         mailedOTP2 = result.OTP;
-        
+        console.log(mailedOTP2);
         const expiresat = Date.now() + 300000;
         const updated=await User.updateOne({email},{
           $set:{
             mailedOTP:mailedOTP2.toString(),
             expiryOTP: expiresat
           }
-        })
+        });
         return res.status(200).json({sucess: true,msg:'OTP sent'});
       } else{
         return res.status(400).json({sucess: false,msg:'OTP not sent'}); 
