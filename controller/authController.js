@@ -33,11 +33,9 @@ const signup = async (req,res)=>{
           if(result.success==true){
             console.log('mail sent.');
             mailedOTP = result.OTP;
-
+            const expiresat = Date.now() + 300000;
             // encrypting password
               const encryptedPassword = await bcrypt.hash(password, 12);
-            
-            console.log(mailedOTP.toString());
 
             // Create new user in database
             const user = await User.create({
@@ -45,7 +43,8 @@ const signup = async (req,res)=>{
             email: email.toLowerCase(), // convert email to lowercase
             password: encryptedPassword,
             email_verify: false,
-            mailedOTP : mailedOTP.toString()
+            mailedOTP : mailedOTP.toString(),
+            expiryOTP : expiresat
             });
 
             // return new user
@@ -69,14 +68,17 @@ const sverify = async (req,res) => {
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
 
-    if(user.mailedOTP===otp){
+    if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{
           email_verify:true
         }
       });
       return res.status(200).json({success:true,msg:'OTP Verified!'});
-    }else{
+    }else if(user.mailedOTP===otp && user.expiryOTP < Date.now()){
+      return res.status(400).json({success:false,msg:'This OTP has expired'});
+    }
+    else{
       return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
      
@@ -120,16 +122,19 @@ const forgotpassword=async (req,res)=>{
       if(result.success==true){
         console.log('mail sent.');
         mailedOTP2 = result.OTP;
-        }
+        
+        const expiresat = Date.now() + 300000;
         const updated=await User.updateOne({email},{
           $set:{
-            mailedOTP:mailedOTP2.toString()
+            mailedOTP:mailedOTP2.toString(),
+            expiryOTP: expiresat
           }
         })
+        return res.status(200).json({sucess: true,msg:'OTP sent'});
+      } else{
+        return res.status(400).json({sucess: false,msg:'OTP not sent'}); 
       }
-      return res.status(200).json({sucess: true,msg:'OTP sent'});
-      
-
+    } 
    }
    catch(err){
     console.log(err);
