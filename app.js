@@ -16,7 +16,9 @@ app.use(express.json());
 // add mongodb database and then start server
 const dbURI = process.env.dbconfig;
 mongoose.connect(dbURI)
-.then(()=>{app.listen(process.env.PORT);})
+.then(()=>{
+app.listen(process.env.PORT);
+console.log("connected")})
 .catch((err)=>{console.log(err)});
 
 // routes
