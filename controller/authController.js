@@ -49,7 +49,7 @@ const signup = async (req,res)=>{
             });
 
             // return new user
-            res.status(201).json({sucess:true,msg:`Welcome to spaces! ${user_name}. Check your mail`});
+            return res.status(201).json({sucess:true,msg:`Welcome to spaces! ${user_name}. Check your mail`});
 
           }else{
             console.log('mail not sent.');
@@ -67,17 +67,17 @@ const sverify = async (req,res) => {
 
     const user = await User.findOne({email});
 
-    if(!user) res.status(400).json({success:false,msg:'user not found by the given mail'});
+    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
 
     if(user.mailedOTP===otp){
-      res.status(200).json({success:true,msg:'OTP Verified!'});
-      const emailstatus=User.updateOne({email},{
+      const emailstatus= await User.updateOne({email},{
         $set:{
           email_verify:true
         }
       });
+      return res.status(200).json({success:true,msg:'OTP Verified!'});
     }else{
-      res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
      
   }catch(err){
@@ -113,7 +113,7 @@ const forgotpassword=async (req,res)=>{
     
     sendotp(email);
 
-    var mailedOTP2;
+    let mailedOTP2;
 
     async function sendotp(emailId){
       const result =  await Auth(emailId, "Spaces");
@@ -123,7 +123,7 @@ const forgotpassword=async (req,res)=>{
         }
         const updated=await User.updateOne({email},{
           $set:{
-            mailedOTP:mailedOTP2
+            mailedOTP:mailedOTP2.toString()
           }
         })
       }
@@ -169,6 +169,5 @@ module.exports = {
     login,
     sverify,
     forgotpassword,
-    changepassword,
-
+    changepassword
 }
