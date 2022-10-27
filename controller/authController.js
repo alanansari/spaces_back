@@ -36,6 +36,8 @@ const signup = async (req,res)=>{
 
             // encrypting password
               const encryptedPassword = await bcrypt.hash(password, 12);
+            
+            console.log(mailedOTP.toString());
 
             // Create new user in database
             const user = await User.create({
@@ -43,7 +45,7 @@ const signup = async (req,res)=>{
             email: email.toLowerCase(), // convert email to lowercase
             password: encryptedPassword,
             email_verify: false,
-            mailedOTP
+            mailedOTP : mailedOTP.toString()
             });
 
             // return new user
@@ -67,13 +69,13 @@ const sverify = async (req,res) => {
 
     if(!user) res.status(400).json({success:false,msg:'user not found by the given mail'});
 
-    if(user.mailedOTP==otp){
+    if(user.mailedOTP===otp){
       res.status(200).json({success:true,msg:'OTP Verified!'});
       const emailstatus=User.updateOne({email},{
         $set:{
           email_verify:true
         }
-      })
+      });
     }else{
       res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
