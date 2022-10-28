@@ -28,12 +28,6 @@ const signup = async (req,res)=>{
         if (oldMail&&oldMail.email_verify==true) {
             return res.status(409)
               .json({sucess:false,msg:"User with this Email ID Already Exists."});
-        } else if(oldMail&&oldMail.email_verify==false&& oldMail.expiryOTP>Date.now() ){
-            return res.status(409)
-              .json({
-                sucess:false,
-                msg:"OTP already sent to Email ID wait for it to expire to send another request."
-              });
         }
 
         // check if username already exist
