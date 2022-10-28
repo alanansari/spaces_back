@@ -218,11 +218,50 @@ const authverifytoken=async (req,res,next)=>{
 
 }
 
+const resendotp=async (req,res)=>{
+  try{
+    const token=req.headers["x-access-token"]
+    const decode=await jwt.decode(token,"jwtsecret")
+    const user_name=decode.user_name
+    const user = await User.findOne({user_name});
+    const email=user.email
+    sendotp(email);
+
+
+    let mailedOTP2;
+
+
+    async function sendotp(emailId){
+      const result =  await Auth(emailId, "Spaces");
+      if(result.success==true){
+        console.log('mail sent.');
+        mailedOTP2 = result.OTP;
+        console.log(mailedOTP2);
+        const expiresat = Date.now() + 300000;
+        const token=jwt.sign({user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
+        const updated=await User.updateOne({email},{
+          $set:{
+            mailedOTP:mailedOTP2.toString(),
+            expiryOTP: expiresat,
+            token
+          }
+        });
+
+        return res.status(200).json({sucess: true,msg:'OTP sent',token:token});
+  }}
+}
+  catch(error){
+    console.log(error); 
+    return res.status(400).json({sucess: false,msg:'OTP not sent'});
+  }
+}
+
 module.exports = {
     signup,
     login,
     sverify,
     forgotpassword,
     changepassword,
-    authverifytoken
+    authverifytoken,
+    resendotp
 }
