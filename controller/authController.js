@@ -169,7 +169,6 @@ const forgotpassword=async (req,res)=>{
       if(result.success==true){
         console.log('mail sent.');
         mailedOTP2 = result.OTP;
-        console.log(mailedOTP2);
         const expiresat = Date.now() + 300000;
         const updated=await User.updateOne({email:email.toLowerCase()},{
           $set:{
@@ -205,11 +204,16 @@ const changepassword=async (req,res)=>{
     const user =await User.findOne({email:email.toLowerCase()});
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+
+    if(user.expiryOTP+180000<=Date.now()){
+      return res.status(409).json({sucess:false,msg:"Verify OTP again to change password session expired."});
+    }
     
       const encpassword=await bcrypt.hash(newpassword,12)
       const updatepassword=user.updateOne({email:email.toLowerCase()},{
         $set:{
-          password:encpassword
+          password:encpassword,
+          expiryOTP:Date.now()-180000
         }
       })
       return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
