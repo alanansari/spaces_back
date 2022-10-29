@@ -3,31 +3,38 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
 const { findOne } = require("../model/userModel");
+const regexval = require("../middleware/validate");
 
 const signup = async (req,res)=>{
     try{
         //get user input
         const {user_name,email,password} = req.body;
 
-        // check if user email already exists
-        const oldMail = await User.findOne({ email });
-
-        if (oldMail&&oldMail.email_verify==true) {
-            return res.status(409)
-              .json({sucess:false,msg:"User with this Email ID Already Exists."});
-        } else if(oldMail&&oldMail.email_verify==false&& oldMail.expiryOTP>Date.now() ){
-            return res.status(409)
-              .json({
-                sucess:false,
-                msg:"OTP already sent to Email ID wait for it to expire to send another request."
-              });
+        if (!(user_name && email && password)) {
+          return res.status(400).send("All inputs are required");
         }
 
+        if(!regexval.validatemail(email)){
+          return res.status(400).send("Incorrect Email Format.");
+        }
+
+        if(!regexval.validatepass(password)){
+          return res.status(400).send("Incorrect Password Format.");
+        }
+
+        // check if user email already exists
+        const oldMail = await User.findOne({ email:email.toLowerCase() });
+
+        if (oldMail&&oldMail.email_verify==true&&oldMail.email_verify==true) {
+            return res.status(409)
+              
+              .json({sucess:false,msg:"User with this Email ID Already Exists."});
+        }
         // check if username already exist
         const oldUser = await User.findOne({ user_name });
 
-        if (oldUser&&oldUser.email_verify==true) {
-            return res.status(409).send({sucess:false,msg:"Username Already Exist."});
+        if (oldUser&&oldUser.email_verify==true&&oldUser.email_verify==true) {
+            return res.status(409).send({sucess:false,msg:"Username Already Exists."});
         }
 
         // email verification
@@ -82,7 +89,10 @@ const signup = async (req,res)=>{
 const sverify = async (req,res) => {
   try{
     const {otp} = req.body;
-    const token=req.headers["authorisation"]
+    if (!otp) {
+      res.status(400).send("Input is required");
+    }
+    const token=req.headers["accesstoken"]
     const decode=await jwt.decode(token,"jwtsecret")
     const user_name=decode.user_name
     const user = await User.findOne({user_name});
@@ -113,21 +123,28 @@ const login = async (req, res) => {
     try {
       const { email, password } = req.body;
 
-      const user = await User.findOne({ email });
+      // validation for email and password inputs
+      if (!(email && password)) {
+        res.status(400).send("All inputs are required");
+      }
+      const user = await User.findOne({ email:email.toLowerCase() });
+
+        if (!user||user.email_verify == false) return res.status(409)
+            .json({sucess:false,msg:"This email doesn't have an account"});
+
       const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
       const updated=await User.updateOne({email},{
         $set:{
           token
         }
       });
-        if (!user||user.email_verify == false) return res.status(409)
-            .json({sucess:false,msg:"This email doesn't have an account"});
+      
 
         const result = await bcrypt.compare(password, user.password);
 
         if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
 
-        return res.status(200).json({sucess: true,msg:`Welcome back! ${user.user_name}`});
+        return res.status(200).json({sucess: true,msg:`Welcome back! ${user.user_name}`,token});
   } catch (err) {
     console.log(err);
   }
@@ -137,7 +154,11 @@ const forgotpassword=async (req,res)=>{
   try{
     const {email}=req.body;
 
-    const user =await User.findOne({email});
+    if (!email) {
+      res.status(400).send("Input is required");
+    }
+
+    const user =await User.findOne({email:email.toLowerCase()});
 
     if (!user||user.email_verify==false) return res.status(409)
       .json({sucess:false,msg:"This email doesn't have an account"});
@@ -152,10 +173,9 @@ const forgotpassword=async (req,res)=>{
       if(result.success==true){
         console.log('mail sent.');
         mailedOTP2 = result.OTP;
-        console.log(mailedOTP2);
         const expiresat = Date.now() + 300000;
         const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
-        const updated=await User.updateOne({email},{
+        const updated=await User.updateOne({email:email.toLowerCase()},{
           $set:{
             mailedOTP:mailedOTP2.toString(),
             expiryOTP: expiresat,
@@ -178,18 +198,31 @@ const forgotpassword=async (req,res)=>{
 const changepassword=async (req,res)=>{
   try{
     const {newpassword}=req.body;
+
+    if (!( newpassword)) {
+      res.status(400).send("All inputs are required");
+    }
+
+    if(!regexval.validatepass(newpassword)){
+      return res.status(400).send("Incorrect Password Format.");
+    }
     
-    const token=req.headers["authorisation"]
+    const token=req.headers["accesstoken"]
     const decode=await jwt.decode(token,"jwtsecret")
     const user_name=decode.user_name
     const user = await User.findOne({user_name});
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+
+    if(user.expiryOTP+180000<=Date.now()){
+      return res.status(409).json({sucess:false,msg:"Verify OTP again to change password session expired."});
+    }
     
       const encpassword=await bcrypt.hash(newpassword,12)
       const updatepassword=user.updateOne({user_name},{
         $set:{
-          password:encpassword
+          password:encpassword,
+          expiryOTP:Date.now()-180000
         }
       })
       return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
@@ -202,7 +235,7 @@ const changepassword=async (req,res)=>{
    }
 }
 const authverifytoken=async (req,res,next)=>{
-  const token=req.headers['authorisation'];
+  const token=req.headers['accesstoken'];
   if(!token)
     return res.status(409).json({sucess:false,msg:"Invalid account1"});
   else{
@@ -220,14 +253,13 @@ const authverifytoken=async (req,res,next)=>{
 
 const resendotp=async (req,res)=>{
   try{
-    const token=req.headers["authorisation"]
+    const token=req.headers["accesstoken"]
     const decode=await jwt.decode(token,"jwtsecret")
     const user_name=decode.user_name
     const user = await User.findOne({user_name});
     const email=user.email
+
     sendotp(email);
-
-
     let mailedOTP2;
 
 
