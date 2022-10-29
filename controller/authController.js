@@ -82,7 +82,7 @@ const signup = async (req,res)=>{
 const sverify = async (req,res) => {
   try{
     const {otp} = req.body;
-    const token=req.headers["x-access-token"]
+    const token=req.headers["authorisation"]
     const decode=await jwt.decode(token,"jwtsecret")
     const user_name=decode.user_name
     const user = await User.findOne({user_name});
@@ -179,7 +179,7 @@ const changepassword=async (req,res)=>{
   try{
     const {newpassword}=req.body;
     
-    const token=req.headers["x-access-token"]
+    const token=req.headers["authorisation"]
     const decode=await jwt.decode(token,"jwtsecret")
     const user_name=decode.user_name
     const user = await User.findOne({user_name});
@@ -202,7 +202,7 @@ const changepassword=async (req,res)=>{
    }
 }
 const authverifytoken=async (req,res,next)=>{
-  const token=req.headers['x-access-token'];
+  const token=req.headers['authorisation'];
   if(!token)
     return res.status(409).json({sucess:false,msg:"Invalid account1"});
   else{
@@ -220,7 +220,7 @@ const authverifytoken=async (req,res,next)=>{
 
 const resendotp=async (req,res)=>{
   try{
-    const token=req.headers["x-access-token"]
+    const token=req.headers["authorisation"]
     const decode=await jwt.decode(token,"jwtsecret")
     const user_name=decode.user_name
     const user = await User.findOne({user_name});
