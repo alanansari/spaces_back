@@ -251,6 +251,34 @@ const authverifytoken=async (req,res,next)=>{
 
 }
 
+const fverify = async (req,res) => {
+  try{
+    const {email,otp} = req.body;
+    if (!otp) {
+      res.status(400).send("Input is required");
+    }
+    const user = await User.findOne({email});
+
+    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
+    if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
+      const emailstatus= await User.updateOne({email},{
+        $set:{
+          expiryOTP: Date.now()
+        }
+      });
+      return res.status(200).json({success:true,msg:'OTP Verified!',token:user.token});
+    }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
+      return res.status(400).json({success:false,msg:'This OTP has expired'});
+    }
+    else{
+      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+    }
+     
+  }catch(err){
+    console.log(err);
+  }
+}
+
 const resendotp=async (req,res)=>{
   try{
     const token=req.headers["accesstoken"]
@@ -295,5 +323,6 @@ module.exports = {
     forgotpassword,
     changepassword,
     authverifytoken,
-    resendotp
+    resendotp,
+    fverify
 }

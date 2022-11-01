@@ -15,7 +15,7 @@ router.post('/resendotp',authController.authverifytoken,authController.resendotp
 
 router.post('/forgotpassword',authController.forgotpassword);
 
-router.post('/forgotpassword/otpverify',authController.authverifytoken,authController.sverify);
+router.post('/forgotpassword/otpverify',authController.authverifytoken,authController.fverify);
 
 router.post('/forgotpassword/otpverify/changepassword',authController.authverifytoken,authController.changepassword);
 
