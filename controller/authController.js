@@ -281,11 +281,8 @@ const sverify = async (req,res) => {
 
 const resendotp=async (req,res)=>{
   try{
-    const token=req.headers["accesstoken"]
-    const decode=await jwt.decode(token,"jwtsecret")
-    const user_name=decode.user_name
-    const user = await User.findOne({user_name});
-    const email=user.email
+    const email=req.body
+    const user = await User.findOne({email});
 
     sendotp(email);
     let mailedOTP2;
@@ -298,16 +295,14 @@ const resendotp=async (req,res)=>{
         mailedOTP2 = result.OTP;
         console.log(mailedOTP2);
         const expiresat = Date.now() + 300000;
-        const token=jwt.sign({user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
         const updated=await User.updateOne({email},{
           $set:{
             mailedOTP:mailedOTP2.toString(),
-            expiryOTP: expiresat,
-            token
+            expiryOTP: expiresat
           }
         });
 
-        return res.status(200).json({sucess: true,msg:'OTP sent',token:token});
+        return res.status(200).json({sucess: true,msg:'OTP sent'});
   }}
 }
   catch(error){

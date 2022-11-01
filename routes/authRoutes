@@ -11,7 +11,7 @@ router.post('/signup/verify',authController.sverify);
 
 router.post('/login', authController.login);
 
-router.post('/resendotp',authController.authverifytoken,authController.resendotp);
+router.post('/resendotp',authController.resendotp);
 
 router.post('/forgotpassword',authController.forgotpassword);
 
