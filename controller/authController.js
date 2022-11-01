@@ -72,7 +72,7 @@ const signup = async (req,res)=>{
           }
 
             // return new user
-            return res.status(201).json({sucess:true,token:token,msg:`Welcome to spaces! ${user_name}. Check your mail`});
+            return res.status(201).json({sucess:true,msg:`Welcome to spaces! ${user_name}. Check your mail`});
 
           }else{
             console.log('mail not sent.');
@@ -99,17 +99,17 @@ const login = async (req, res) => {
         if (!user||user.email_verify == false) return res.status(409)
             .json({sucess:false,msg:"This email doesn't have an account"});
 
-      const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
+
+        const result = await bcrypt.compare(password, user.password);
+
+        if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
+
+        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
       const updated=await User.updateOne({email},{
         $set:{
           token
         }
       });
-      
-
-        const result = await bcrypt.compare(password, user.password);
-
-        if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
 
         return res.status(200).json({sucess: true,msg:`Welcome back! ${user.user_name}`,token});
   } catch (err) {
@@ -141,7 +141,7 @@ const forgotpassword=async (req,res)=>{
         console.log('mail sent.');
         mailedOTP2 = result.OTP;
         const expiresat = Date.now() + 300000;
-        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
+        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
         const updated=await User.updateOne({email:email.toLowerCase()},{
           $set:{
             mailedOTP:mailedOTP2.toString(),
@@ -150,7 +150,7 @@ const forgotpassword=async (req,res)=>{
           }
         });
 
-        return res.status(200).json({sucess: true,msg:'OTP sent',token:token});
+        return res.status(200).json({sucess: true,msg:'OTP sent'});
       } else{
         return res.status(400).json({sucess: false,msg:'OTP not sent'}); 
       }
@@ -174,22 +174,18 @@ const changepassword=async (req,res)=>{
       return res.status(400).send("Incorrect Password Format.");
     }
     
-    const token=req.headers["accesstoken"]
-    const decode=await jwt.decode(token,"jwtsecret")
-    const user_name=decode.user_name
+    const token=req.headers["accesstoken"];
+    const decode=await jwt.decode(token,"jwtsecret");
+    const user_name=decode.user_name;
     const user = await User.findOne({user_name});
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
 
-    if(user.expiryOTP+180000<=Date.now()){
-      return res.status(409).json({sucess:false,msg:"Verify OTP again to change password session expired."});
-    }
     
       const encpassword=await bcrypt.hash(newpassword,12)
       const updatepassword=user.updateOne({user_name},{
         $set:{
           password:encpassword,
-          expiryOTP:Date.now()-180000
         }
       })
       return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
@@ -227,7 +223,7 @@ const fverify = async (req,res) => {
     const user = await User.findOne({email});
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
-    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{
@@ -257,7 +253,7 @@ const sverify = async (req,res) => {
     const user = await User.findOne({email});
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
-    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"});
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{

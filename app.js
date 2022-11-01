@@ -6,13 +6,12 @@ const bodyParser = require('body-parser')
 
 
 
-const jsonParser = bodyParser.json()
+const jsonParser = bodyParser.json();
 
 const app = express();
 
 // fix for cors
-const cors=require('cors')
-
+const cors=require('cors');
 app.use(cors({origin:true}))
 
 
