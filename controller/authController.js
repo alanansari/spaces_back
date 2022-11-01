@@ -41,7 +41,6 @@ const signup = async (req,res)=>{
         login(email);
 
         let mailedOTP;
-        const token=jwt.sign({user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
         async function login(emailId){
           const result =  await Auth(emailId, "Spaces");
           if(result.success==true){
@@ -60,7 +59,6 @@ const signup = async (req,res)=>{
               email_verify: false,
               mailedOTP : mailedOTP.toString(),
               expiryOTP : expiresat,
-              token
               });
             }else{
               const emailstatus= await User.updateOne({email},{
@@ -86,38 +84,7 @@ const signup = async (req,res)=>{
     }
 }
 
-const sverify = async (req,res) => {
-  try{
-    const {otp} = req.body;
-    if (!otp) {
-      res.status(400).send("Input is required");
-    }
-    const token=req.headers["accesstoken"]
-    const decode=await jwt.decode(token,"jwtsecret")
-    const user_name=decode.user_name
-    const user = await User.findOne({user_name});
 
-    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
-
-    if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
-      const emailstatus= await User.updateOne({user_name},{
-        $set:{
-          email_verify:true,
-          expiryOTP: Date.now()
-        }
-      });
-      return res.status(200).json({success:true,msg:'OTP Verified!',token:user.token});
-    }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
-      return res.status(400).json({success:false,msg:'This OTP has expired'});
-    }
-    else{
-      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
-    }
-     
-  }catch(err){
-    console.log(err);
-  }
-}
 
 const login = async (req, res) => {
     try {
@@ -260,13 +227,46 @@ const fverify = async (req,res) => {
     const user = await User.findOne({email});
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{
-          expiryOTP: Date.now()
+          expiryOTP: Date.now(),
+          token
         }
       });
-      return res.status(200).json({success:true,msg:'OTP Verified!',token:user.token});
+      return res.status(200).json({success:true,msg:'OTP Verified!',token:token});
+    }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
+      return res.status(400).json({success:false,msg:'This OTP has expired'});
+    }
+    else{
+      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+    }
+     
+  }catch(err){
+    console.log(err);
+  }
+}
+
+const sverify = async (req,res) => {
+  try{
+    const {email,otp} = req.body;
+    if (!otp) {
+      res.status(400).send("Input is required");
+    }
+    const user = await User.findOne({email});
+
+    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"2h"})
+    if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
+      const emailstatus= await User.updateOne({email},{
+        $set:{
+          expiryOTP: Date.now(),
+          token,
+          email_verify:true
+        }
+      });
+      return res.status(200).json({success:true,msg:'OTP Verified!',token:token});
     }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
       return res.status(400).json({success:false,msg:'This OTP has expired'});
     }
