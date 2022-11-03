@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
-const { findOne } = require("../model/userModel");
+//const { findOne } = require("../model/userModel");
 const regexval = require("../middleware/validate");
 
 const signup = async (req,res)=>{
@@ -277,7 +277,7 @@ const sverify = async (req,res) => {
 
 const resendotp=async (req,res)=>{
   try{
-    const email=req.body
+    const {email}=req.body
     const user = await User.findOne({email});
 
     sendotp(email);
