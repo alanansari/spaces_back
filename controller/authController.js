@@ -174,7 +174,9 @@ const changepassword=async (req,res)=>{
       return res.status(400).send("Incorrect Password Format.");
     }
     
-    const token=req.headers["accesstoken"];
+    let token=req.headers['accesstoken'] || req.headers['authorization'];
+    token = token.replace(/^Bearer\s+/, "");
+
     const decode=await jwt.decode(token,"jwtsecret");
     const user_name=decode.user_name;
     const user = await User.findOne({user_name});
@@ -198,7 +200,9 @@ const changepassword=async (req,res)=>{
    }
 }
 const authverifytoken=async (req,res,next)=>{
-  const token=req.headers['accesstoken'];
+  let token=req.headers['accesstoken'] || req.headers['authorization'];
+  token = token.replace(/^Bearer\s+/, "");
+
   if(!token)
     return res.status(409).json({sucess:false,msg:"Invalid account1"});
   else{
