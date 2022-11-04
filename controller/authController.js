@@ -170,9 +170,9 @@ const changepassword=async (req,res)=>{
       res.status(400).send("All inputs are required");
     }
 
-    if(!regexval.validatepass(newpassword)){
-      return res.status(400).send("Incorrect Password Format.");
-    }
+    // if(!regexval.validatepass(newpassword)){
+    //   return res.status(400).send("Incorrect Password Format.");
+    // }
     
     let token=req.headers['accesstoken'] || req.headers['authorization'];
     token = token.replace(/^Bearer\s+/, "");
