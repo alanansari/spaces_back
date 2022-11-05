@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
-//const { findOne } = require("../model/userModel");
 const regexval = require("../middleware/validate");
 
 const signup = async (req,res)=>{
@@ -181,7 +180,7 @@ const changepassword=async (req,res)=>{
     const user_name=decode.user_name;
     const user = await User.findOne({user_name});
 
-    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+    if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
 
     
       const encpassword=await bcrypt.hash(newpassword,12)

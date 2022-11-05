@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
-    author: { type: String,required:true,unique: true},
-    subspace: {type: String,required:true,unique:true},
+    author: { type: String,required:true},
+    subspace: {type: String,required:true},
     heading: {type: String,required:true},
     para: {type: String},
     votes: {type: Number},
