@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const subspaceRoutes = require('./routes/subspaceRoutes');
+const fs = require('fs');
+
+if (!fs.existsSync('./uploads')){
+    fs.mkdirSync('./uploads');
+}
 require('dotenv').config();
 
 const app = express();
@@ -24,6 +29,9 @@ mongoose.connect(dbURI)
 .catch((err)=>{
     console.log(err)
 });
+
+app.use(express.static(__dirname + '/public'));
+app.use('/uploads', express.static('uploads'));
 
 // routes
 app.use('/s',subspaceRoutes);
