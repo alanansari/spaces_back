@@ -2,6 +2,7 @@ const { findById } = require('../model/postModel');
 const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const Post = require('../model/postModel');
+const subSpace = require('../model/subspaceModel');
 
 const newpost = async (req,res) => {
     try{
@@ -59,8 +60,9 @@ const getpost = async (req,res) => {
 
 const getfeed = async (req,res) => {
     try {
+        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
         const posts = await Post.find().sort({votes:-1,createdAt:-1}).limit(10);
-        return res.status(200).json(posts);
+        return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
     }

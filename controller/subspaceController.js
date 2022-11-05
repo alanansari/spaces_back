@@ -1,22 +1,24 @@
 const subspace = require('../model/subspaceModel');
 const User = require('../model/userModel');
+const jwt = require('jsonwebtoken');
 
 const newsubspace = async (req,res) => {
 
     try{
-        const {user_name,name,about} = req.body;
+        const {name,about,rules} = req.body;
 
         if(!name||!about){
             return res.status(400).json({success:false,msg:'Fill all input fields!'});
         }
 
-        // Using token
 
-        // const token=req.headers["accesstoken"] || req.headers['authorization'];
-        // const decode=await jwt.decode(token,"jwtsecret");
-        // const user_name=decode.user_name;
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        token = token.replace(/^Bearer\s+/, "");
 
+        const decode=await jwt.decode(token,"jwtsecret");
+        const user_name=decode.user_name;
         const user = await User.findOne({user_name});
+
 
         if(!user)
             return res.status(400).json({success:false,msg:'User not found!'});
@@ -25,14 +27,22 @@ const newsubspace = async (req,res) => {
 
         if(oldspace) return res.status(400).json({success:false,msg:`${name} is already taken.`});
 
+        let filepath = null;
+
+        if(req.file !== undefined){
+            filepath = 'uploads/' + req.file.filename;
+        }
+
         const space = await subspace.create({
             admin: user.user_name,
             name,
             about,
+            rules,
+            imgpath: filepath,
             createdAt: Date.now()
         });
 
-        return res.status(200).json(space);
+        return res.status(200).json({success:true,msg:`created subspace ${name}`});
     } catch (err){
         console.log(err);
     }
