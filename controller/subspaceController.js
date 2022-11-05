@@ -12,7 +12,7 @@ const newsubspace = async (req,res) => {
 
         // Using token
 
-        // const token=req.headers["accesstoken"];
+        // const token=req.headers["accesstoken"] || req.headers['authorization'];
         // const decode=await jwt.decode(token,"jwtsecret");
         // const user_name=decode.user_name;
 
