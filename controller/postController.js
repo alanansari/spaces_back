@@ -9,7 +9,7 @@ const newpost = async (req,res) => {
         let filepath = null;
 
         if(req.file !== undefined){
-            filepath = req.file.path;
+            filepath = 'uploads/' + req.file.filename;
         }
 
         // Using JWT
