@@ -180,7 +180,7 @@ const changepassword=async (req,res)=>{
     const user_name=decode.user_name;
     const user = await User.findOne({user_name});
 
-    if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+    if (!user) return res.status(409).json({sucess:false,msg:"This is not a valid account"});
 
     
       const encpassword=await bcrypt.hash(newpassword,12)

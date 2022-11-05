@@ -5,7 +5,7 @@ const postController = require('../controller/postController');
 
 const router = express.Router();
 
-router.get('/feed',postController.getallposts);
+router.get('/feed',postController.getfeed);
 
 router.get('/next',postController.getmoreposts);
 
