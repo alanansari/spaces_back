@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {ObjectId} = mongoose.Schema.Types;
 
 const postSchema = new mongoose.Schema({
     author: { type: String,required:true},
@@ -6,7 +7,8 @@ const postSchema = new mongoose.Schema({
     heading: {type: String,required:true},
     para: {type: String},
     imgpath: {type: String},
-    votes: {type: Number,default:0},
+    upvotes:[{type:ObjectId,ref:"user"}],
+    downvotes:[{type:ObjectId,ref:"user"}],
     comments: [{type:String}],
     createdAt: {type: Number}
 });
