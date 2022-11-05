@@ -56,9 +56,9 @@ const getpost = async (req,res) => {
     }
 }
 
-const getallposts = async (req,res) => {
+const getfeed = async (req,res) => {
     try {
-        const posts = await Post.find().limit(10);
+        const posts = await Post.find().sort({votes:-1,createdAt:-1}).limit(10);
         return res.status(200).json(posts);
     } catch (err) {
         console.log(err);
@@ -78,6 +78,6 @@ const getmoreposts = async (req,res) => {
 module.exports = {
     newpost,
     getpost,
-    getallposts,
+    getfeed,
     getmoreposts
 }

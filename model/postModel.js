@@ -5,8 +5,9 @@ const postSchema = new mongoose.Schema({
     subspace: {type: String,required:true},
     heading: {type: String,required:true},
     para: {type: String},
-    votes: {type: Number},
     imgpath: {type: String},
+    votes: {type: Number,default:0},
+    comments: [{type:String}],
     createdAt: {type: Number}
 });
 
