@@ -1,9 +1,11 @@
 const { findById } = require('../model/postModel');
+const jwt = require("jsonwebtoken");
+const User = require('../model/userModel');
 const Post = require('../model/postModel');
 
 const newpost = async (req,res) => {
     try{
-        const {user_name,subspace,heading,para} = req.body;
+        const {subspace,heading,para} = req.body;
 
 
         let filepath = null;
@@ -12,16 +14,15 @@ const newpost = async (req,res) => {
             filepath = 'uploads/' + req.file.filename;
         }
 
-        // Using JWT
 
-        // let token=req.headers['accesstoken'] || req.headers['authorization'];
-        // token = token.replace(/^Bearer\s+/, "");
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        token = token.replace(/^Bearer\s+/, "");
 
-        // const decode=await jwt.decode(token,"jwtsecret");
-        // const user_name=decode.user_name;
-        // const user = await User.findOne({user_name});
+        const decode=await jwt.decode(token,"jwtsecret");
+        const user_name=decode.user_name;
+        const user = await User.findOne({user_name});
 
-        // if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
 
         const post = await Post.create({
             author:user_name,

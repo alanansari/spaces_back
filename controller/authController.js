@@ -180,15 +180,15 @@ const changepassword=async (req,res)=>{
     const user_name=decode.user_name;
     const user = await User.findOne({user_name});
 
-    if (!user) return res.status(409).json({sucess:false,msg:"This is not a valid account"});
+    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
 
     
       const encpassword=await bcrypt.hash(newpassword,12)
-      const updatepassword=user.updateOne({user_name},{
+      const updatepassword= await user.updateOne({user_name},{
         $set:{
           password:encpassword,
         }
-      })
+      });
       return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
       
 
