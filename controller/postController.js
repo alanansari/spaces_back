@@ -79,66 +79,40 @@ const getmoreposts = async (req,res) => {
 }
 
 const upvote=async (req,res)=>{
-    Post.findByIdAndUpdate(req.body.postId,{
-        $push:{upvotes:req.user._id},
-        $pull:{
-            downvotes:req.user._id
-        }
-    },{
-            new:true
-        }).exec((err,result)=>{
-            if(err){
-                return res.status(404).json({success:false,msg:'Post not found.'});
-            }
-            else{
-                return res.status(200).json(result);
-            }
-        })
-    }
+    const result =  await Post.findByIdAndUpdate(req.body._Id,{
+           $push:{upvotes:req.user._id},
+           $pull:{unupvotes:req.user._id}
+       },{new:true})
+     if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+     else res.status(200).json({success:true,msg:result})
+}
 
 const unupvote=async (req,res)=>{
-    Post.findByIdAndUpdate(req.body.postId,{
-        $pull:{upvotes:req.user._id}},{
-            new:true
-        }).exec((err,result)=>{
-            if(err){
-                return res.status(404).json({success:false,msg:'Post not found.'});
-            }
-            else{
-                return res.status(200).json(result);
-            }
-        })
+   const result=await Post.findByIdAndUpdate(req.body._Id,{
+        $pull:{upvotes:req.user._id}},
+        {new:true})
+        if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+        else res.status(200).json({success:true,msg:result})
     }
 
     const downvote=async (req,res)=>{
-        Post.findByIdAndUpdate(req.body.postId,{
+      const result=await  Post.findByIdAndUpdate(req.body._Id,{
             $push:{downvotes:req.user._id},
-            $pull:{
-                upvotes:req.user._id
-            }},{
+            $pull:{upvotes:req.user._id}},{
                  new:true
-            }).exec((err,result)=>{
-                if(err){
-                    return res.status(404).json({success:false,msg:'Post not found.'});
-                }
-                else{
-                    return res.status(200).json(result);
-                }
-      })
+            })    
+             if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+            else res.status(200).json({success:true,msg:result})
     }
         
     const undownvote=async (req,res)=>{
-        Post.findByIdAndUpdate(req.body.postId,{
-            $pull:{downvotes:req.user._id}},{
+      const result= await Post.findByIdAndUpdate(req.body._Id,{
+            $pull:{downvotes:req.user._id}},
+               {
                     new:true
-                }).exec((err,result)=>{
-                if(err){
-                     return res.status(404).json({success:false,msg:'Post not found.'});
-                }
-                else{
-                    return res.status(200).json(result);
-                }
-            })
+                })    
+                if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+                else res.status(200).json({success:true,msg:result})
     }
     
 

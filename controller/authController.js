@@ -173,11 +173,7 @@ const changepassword=async (req,res)=>{
     //   return res.status(400).send("Incorrect Password Format.");
     // }
     
-    let token=req.headers['accesstoken'] || req.headers['authorization'];
-    token = token.replace(/^Bearer\s+/, "");
-
-    const decode=await jwt.decode(token,"jwtsecret");
-    const user_name=decode.user_name;
+    const user_name=req.user.user_name;
     const user = await User.findOne({user_name});
 
     if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
