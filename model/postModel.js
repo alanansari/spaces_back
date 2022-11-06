@@ -9,7 +9,7 @@ const postSchema = new mongoose.Schema({
     imgpath: {type: String},
     upvotes:[{type:ObjectId,ref:"user"}],
     downvotes:[{type:ObjectId,ref:"user"}],
-    comments: [{type:String}],
+    comments: [{type:ObjectId,ref:"comments"}],
     createdAt: {type: Number}
 });
 

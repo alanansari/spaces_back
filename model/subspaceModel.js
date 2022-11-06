@@ -3,7 +3,7 @@ const {ObjectId} = mongoose.Schema.Types;
 
 const subspaceSchema = new mongoose.Schema({
     admin: { type: String,required:true},
-    name: { type: String,required:true,unique:true},
+    name: {type: String,required:true,unique:true},
     about: { type: String},
     rules: {type:String},
     imgpath:{type:String},
