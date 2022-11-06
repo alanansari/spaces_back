@@ -1,0 +1,28 @@
+const express = require('express');
+const Upload = require('../middleware/upload');
+
+
+const validation = require('../middleware/authveriftoken');
+
+const postController = require('../controller/postController');
+
+const router = express.Router();
+
+router.get('/feed',postController.getfeed);
+
+router.get('/next',postController.getmoreposts);
+
+router.post('/newpost',validation.authverifytoken, Upload.uploadImg.single('image'), postController.newpost);
+
+router.get('/:id',postController.getpost);
+
+router.put('/upvote',validation.authverifytoken,postController.upvote);
+
+router.put('/unupvote',validation.authverifytoken,postController.unupvote);
+
+router.put('/downvote',validation.authverifytoken,postController.downvote);
+
+router.put('/undownvote',validation.authverifytoken,postController.undownvote);
+
+
+module.exports = router;

@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
-const { findOne } = require("../model/userModel");
 const regexval = require("../middleware/validate");
 
 const signup = async (req,res)=>{
@@ -170,11 +169,13 @@ const changepassword=async (req,res)=>{
       res.status(400).send("All inputs are required");
     }
 
-    if(!regexval.validatepass(newpassword)){
-      return res.status(400).send("Incorrect Password Format.");
-    }
+    // if(!regexval.validatepass(newpassword)){
+    //   return res.status(400).send("Incorrect Password Format.");
+    // }
     
-    const token=req.headers["accesstoken"];
+    let token=req.headers['accesstoken'] || req.headers['authorization'];
+    token = token.replace(/^Bearer\s+/, "");
+
     const decode=await jwt.decode(token,"jwtsecret");
     const user_name=decode.user_name;
     const user = await User.findOne({user_name});
@@ -183,11 +184,11 @@ const changepassword=async (req,res)=>{
 
     
       const encpassword=await bcrypt.hash(newpassword,12)
-      const updatepassword=user.updateOne({user_name},{
+      const updatepassword= await user.updateOne({user_name},{
         $set:{
           password:encpassword,
         }
-      })
+      });
       return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
       
 
@@ -196,19 +197,6 @@ const changepassword=async (req,res)=>{
    catch(err){
     console.log(err);
    }
-}
-const authverifytoken=async (req,res,next)=>{
-  try{
-    const token=req.headers['accesstoken'];
-    if(!token)
-    return res.status(409).json({sucess:false,msg:"Invalid account1"});
-      
-    const verify=await jwt.verify(token,process.env.jwtsecretkey1)
-    next()
-  }
-  catch(err){
-    return res.status(409).json({sucess:false,msg:"Invalid account2"});  
-  }
 }
 
 const fverify = async (req,res) => {
@@ -274,7 +262,7 @@ const sverify = async (req,res) => {
 
 const resendotp=async (req,res)=>{
   try{
-    const email=req.body
+    const {email}=req.body
     const user = await User.findOne({email});
 
     sendotp(email);
@@ -310,7 +298,6 @@ module.exports = {
     sverify,
     forgotpassword,
     changepassword,
-    authverifytoken,
     resendotp,
     fverify
 }
