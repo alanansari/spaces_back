@@ -7,7 +7,7 @@ const authverifytoken=async (req,res,next)=>{
     if(!token)
       return res.status(409).json({sucess:false,msg:"Invalid account1"});
     else{
-        const verify=await jwt.verify(token,process.env.jwtsecretkey1,(err,payload)=>{
+        const verify = await jwt.verify(token,process.env.jwtsecretkey1,(err,payload)=>{
         if(err){
           return res.status(409).json({sucess:false,msg:"Invalid account2"});  
         }

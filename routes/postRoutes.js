@@ -14,8 +14,6 @@ router.get('/next',postController.getmoreposts);
 
 router.post('/newpost',validation.authverifytoken, Upload.uploadImg.single('image'), postController.newpost);
 
-router.get('/:id',postController.getpost);
-
 router.put('/upvote',validation.authverifytoken,postController.upvote);
 
 router.put('/unupvote',validation.authverifytoken,postController.unupvote);
@@ -24,5 +22,6 @@ router.put('/downvote',validation.authverifytoken,postController.downvote);
 
 router.put('/undownvote',validation.authverifytoken,postController.undownvote);
 
+router.get('/:id',postController.getpost);
 
 module.exports = router;

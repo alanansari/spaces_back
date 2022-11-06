@@ -91,7 +91,7 @@ const upvote=async (req,res)=>{
                 return res.status(404).json({success:false,msg:'Post not found.'});
             }
             else{
-                res.json(result)
+                return res.status(200).json(result);
             }
         })
     }
@@ -105,7 +105,7 @@ const unupvote=async (req,res)=>{
                 return res.status(404).json({success:false,msg:'Post not found.'});
             }
             else{
-                res.json(result)
+                return res.status(200).json(result);
             }
         })
     }
@@ -122,7 +122,7 @@ const unupvote=async (req,res)=>{
                     return res.status(404).json({success:false,msg:'Post not found.'});
                 }
                 else{
-                    res.json(result)
+                    return res.status(200).json(result);
                 }
       })
     }
@@ -136,7 +136,7 @@ const unupvote=async (req,res)=>{
                      return res.status(404).json({success:false,msg:'Post not found.'});
                 }
                 else{
-                    res.json(result)
+                    return res.status(200).json(result);
                 }
             })
     }
