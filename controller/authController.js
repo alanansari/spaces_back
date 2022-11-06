@@ -198,20 +198,17 @@ const changepassword=async (req,res)=>{
    }
 }
 const authverifytoken=async (req,res,next)=>{
-  const token=req.headers['accesstoken'];
-  if(!token)
+  try{
+    const token=req.headers['accesstoken'];
+    if(!token)
     return res.status(409).json({sucess:false,msg:"Invalid account1"});
-  else{
-    try{
-      const verify=await jwt.verify(token,process.env.jwtsecretkey1)
-      next()
+      
+    const verify=await jwt.verify(token,process.env.jwtsecretkey1)
+    next()
   }
   catch(err){
     return res.status(409).json({sucess:false,msg:"Invalid account2"});  
   }
-
-}
-
 }
 
 const fverify = async (req,res) => {
