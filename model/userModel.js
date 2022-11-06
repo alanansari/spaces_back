@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {ObjectId} = mongoose.Schema.Types;
 
 const userSchema = new mongoose.Schema({
     user_name: { type: String,required:true, unique: true},
@@ -7,6 +8,7 @@ const userSchema = new mongoose.Schema({
     email_verify: {type: Boolean},
     mailedOTP: {type: String},
     expiryOTP: {type: Number},
+    mysubspaces: [{type: String}],
     token: { type: String },
   });
 

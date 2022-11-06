@@ -42,7 +42,18 @@ const newsubspace = async (req,res) => {
             createdAt: Date.now()
         });
 
-        return res.status(200).json({success:true,msg:`created subspace ${name}`});
+        const addspace = await User.findOneAndUpdate({user_name},{
+            $push:{mysubspaces:name}
+        },{new:true}).exec((err,result)=>{
+            if(err){
+                return res.status(400).json({success:false,msg:"Not able to add to user's subspaces"});
+            }
+            else{
+                return res.status(200).json({success:true,msg:`created subspace ${name}`});
+            }
+        });
+
+        
     } catch (err){
         console.log(err);
     }

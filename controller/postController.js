@@ -4,6 +4,23 @@ const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
 
+const postform = async(req,res)=>{
+    try {
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        token = token.replace(/^Bearer\s+/, "");
+
+        const decode = await jwt.decode(token,"jwtsecret");
+        const user_name=decode.user_name;
+        const user = await User.findOne({user_name});
+
+        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+
+        return res.status(200).json(user.mysubspaces);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const newpost = async (req,res) => {
     try{
         const {subspace,heading,para} = req.body;
@@ -61,7 +78,7 @@ const getpost = async (req,res) => {
 const getfeed = async (req,res) => {
     try {
         const topcomm = await subSpace.find().sort({members:-1}).limit(5);
-        const posts = await Post.find().sort({votes:-1,createdAt:-1}).limit(10);
+        const posts = await Post.find().sort({createdAt:-1}).limit(10);
         return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
@@ -71,7 +88,7 @@ const getfeed = async (req,res) => {
 const getmoreposts = async (req,res) => {
     try {
         const {num} = req.body;
-        const posts = await Post.find().skip(10*num).limit(10);
+        const posts = await Post.find().sort({createdAt:-1}).skip(10*num).limit(10);
         return res.status(200).json(posts);
     } catch (err) {
         console.log(err);
@@ -143,6 +160,7 @@ const unupvote=async (req,res)=>{
     
 
 module.exports = {
+    postform,
     newpost,
     getpost,
     getfeed,
