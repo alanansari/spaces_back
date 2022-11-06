@@ -1,9 +1,12 @@
 const { findById } = require('../model/postModel');
+const jwt = require("jsonwebtoken");
+const User = require('../model/userModel');
 const Post = require('../model/postModel');
+const subSpace = require('../model/subspaceModel');
 
 const newpost = async (req,res) => {
     try{
-        const {user_name,subspace,heading,para} = req.body;
+        const {subspace,heading,para} = req.body;
 
 
         let filepath = null;
@@ -12,16 +15,15 @@ const newpost = async (req,res) => {
             filepath = 'uploads/' + req.file.filename;
         }
 
-        // Using JWT
 
-        // let token=req.headers['accesstoken'] || req.headers['authorization'];
-        // token = token.replace(/^Bearer\s+/, "");
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        token = token.replace(/^Bearer\s+/, "");
 
-        // const decode=await jwt.decode(token,"jwtsecret");
-        // const user_name=decode.user_name;
-        // const user = await User.findOne({user_name});
+        const decode=await jwt.decode(token,"jwtsecret");
+        const user_name=decode.user_name;
+        const user = await User.findOne({user_name});
 
-        // if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
 
         const post = await Post.create({
             author:user_name,
@@ -58,8 +60,9 @@ const getpost = async (req,res) => {
 
 const getfeed = async (req,res) => {
     try {
+        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
         const posts = await Post.find().sort({votes:-1,createdAt:-1}).limit(10);
-        return res.status(200).json(posts);
+        return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
     }
@@ -75,9 +78,77 @@ const getmoreposts = async (req,res) => {
     }
 }
 
+const upvote=async (req,res)=>{
+    Post.findByIdAndUpdate(req.body.postId,{
+        $push:{upvotes:req.user._id},
+        $pull:{
+            downvotes:req.user._id
+        }
+    },{
+            new:true
+        }).exec((err,result)=>{
+            if(err){
+                return res.status(404).json({success:false,msg:'Post not found.'});
+            }
+            else{
+                return res.status(200).json(result);
+            }
+        })
+    }
+
+const unupvote=async (req,res)=>{
+    Post.findByIdAndUpdate(req.body.postId,{
+        $pull:{upvotes:req.user._id}},{
+            new:true
+        }).exec((err,result)=>{
+            if(err){
+                return res.status(404).json({success:false,msg:'Post not found.'});
+            }
+            else{
+                return res.status(200).json(result);
+            }
+        })
+    }
+
+    const downvote=async (req,res)=>{
+        Post.findByIdAndUpdate(req.body.postId,{
+            $push:{downvotes:req.user._id},
+            $pull:{
+                upvotes:req.user._id
+            }},{
+                 new:true
+            }).exec((err,result)=>{
+                if(err){
+                    return res.status(404).json({success:false,msg:'Post not found.'});
+                }
+                else{
+                    return res.status(200).json(result);
+                }
+      })
+    }
+        
+    const undownvote=async (req,res)=>{
+        Post.findByIdAndUpdate(req.body.postId,{
+            $pull:{downvotes:req.user._id}},{
+                    new:true
+                }).exec((err,result)=>{
+                if(err){
+                     return res.status(404).json({success:false,msg:'Post not found.'});
+                }
+                else{
+                    return res.status(200).json(result);
+                }
+            })
+    }
+    
+
 module.exports = {
     newpost,
     getpost,
     getfeed,
-    getmoreposts
+    getmoreposts,
+    upvote,
+    unupvote,
+    downvote,
+    undownvote
 }

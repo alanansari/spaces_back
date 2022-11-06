@@ -180,15 +180,15 @@ const changepassword=async (req,res)=>{
     const user_name=decode.user_name;
     const user = await User.findOne({user_name});
 
-    if (!user) return res.status(409).json({sucess:false,msg:"This is not a valid account"});
+    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
 
     
       const encpassword=await bcrypt.hash(newpassword,12)
-      const updatepassword=user.updateOne({user_name},{
+      const updatepassword= await user.updateOne({user_name},{
         $set:{
           password:encpassword,
         }
-      })
+      });
       return res.status(200).json({sucess: true,msg:'Password Changed Successfully'});
       
 
@@ -197,24 +197,6 @@ const changepassword=async (req,res)=>{
    catch(err){
     console.log(err);
    }
-}
-const authverifytoken=async (req,res,next)=>{
-  let token=req.headers['accesstoken'] || req.headers['authorization'];
-  token = token.replace(/^Bearer\s+/, "");
-
-  if(!token)
-    return res.status(409).json({sucess:false,msg:"Invalid account1"});
-  else{
-    try{
-      const verify=await jwt.verify(token,process.env.jwtsecretkey1)
-      next()
-  }
-  catch(err){
-    return res.status(409).json({sucess:false,msg:"Invalid account2"});  
-  }
-
-}
-
 }
 
 const fverify = async (req,res) => {
@@ -316,7 +298,6 @@ module.exports = {
     sverify,
     forgotpassword,
     changepassword,
-    authverifytoken,
     resendotp,
     fverify
 }
