@@ -198,24 +198,6 @@ const changepassword=async (req,res)=>{
     console.log(err);
    }
 }
-const authverifytoken=async (req,res,next)=>{
-  let token=req.headers['accesstoken'] || req.headers['authorization'];
-  token = token.replace(/^Bearer\s+/, "");
-
-  if(!token)
-    return res.status(409).json({sucess:false,msg:"Invalid account1"});
-  else{
-    try{
-      const verify=await jwt.verify(token,process.env.jwtsecretkey1)
-      next()
-  }
-  catch(err){
-    return res.status(409).json({sucess:false,msg:"Invalid account2"});  
-  }
-
-}
-
-}
 
 const fverify = async (req,res) => {
   try{
@@ -316,7 +298,6 @@ module.exports = {
     sverify,
     forgotpassword,
     changepassword,
-    authverifytoken,
     resendotp,
     fverify
 }

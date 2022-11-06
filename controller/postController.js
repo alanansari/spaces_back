@@ -78,9 +78,77 @@ const getmoreposts = async (req,res) => {
     }
 }
 
+const upvote=async (req,res)=>{
+    Post.findByIdAndUpdate(req.body.postId,{
+        $push:{upvotes:req.user._id},
+        $pull:{
+            downvotes:req.user._id
+        }
+    },{
+            new:true
+        }).exec((err,result)=>{
+            if(err){
+                return res.status(404).json({success:false,msg:'Post not found.'});
+            }
+            else{
+                res.json(result)
+            }
+        })
+    }
+
+const unupvote=async (req,res)=>{
+    Post.findByIdAndUpdate(req.body.postId,{
+        $pull:{upvotes:req.user._id}},{
+            new:true
+        }).exec((err,result)=>{
+            if(err){
+                return res.status(404).json({success:false,msg:'Post not found.'});
+            }
+            else{
+                res.json(result)
+            }
+        })
+    }
+
+    const downvote=async (req,res)=>{
+        Post.findByIdAndUpdate(req.body.postId,{
+            $push:{downvotes:req.user._id},
+            $pull:{
+                upvotes:req.user._id
+            }},{
+                 new:true
+            }).exec((err,result)=>{
+                if(err){
+                    return res.status(404).json({success:false,msg:'Post not found.'});
+                }
+                else{
+                    res.json(result)
+                }
+      })
+    }
+        
+    const undownvote=async (req,res)=>{
+        Post.findByIdAndUpdate(req.body.postId,{
+            $pull:{downvotes:req.user._id}},{
+                    new:true
+                }).exec((err,result)=>{
+                if(err){
+                     return res.status(404).json({success:false,msg:'Post not found.'});
+                }
+                else{
+                    res.json(result)
+                }
+            })
+    }
+    
+
 module.exports = {
     newpost,
     getpost,
     getfeed,
-    getmoreposts
+    getmoreposts,
+    upvote,
+    unupvote,
+    downvote,
+    undownvote
 }

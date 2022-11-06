@@ -1,6 +1,6 @@
 const express = require('express');
 const Upload = require('../middleware/upload');
-const validation = require('../controller/authController');
+const validation = require('../middleware/authveriftoken');
 
 const subspaceController = require('../controller/subspaceController');
 
