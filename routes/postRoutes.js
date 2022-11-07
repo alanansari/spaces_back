@@ -1,5 +1,6 @@
 const express = require('express');
 const Upload = require('../middleware/upload');
+const ismember = require('../middleware/ismember');
 
 
 const validation = require('../middleware/authveriftoken');
@@ -14,7 +15,7 @@ router.get('/next',postController.getmoreposts);
 
 router.get('/postform',validation.authverifytoken,postController.postform);
 
-router.post('/newpost',validation.authverifytoken, Upload.uploadImg.single('image'), postController.newpost);
+router.post('/newpost',validation.authverifytoken,ismember.ismember,Upload.uploadImg.single('image'), postController.newpost);
 
 router.put('/upvote',validation.authverifytoken,postController.upvote);
 

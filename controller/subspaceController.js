@@ -1,6 +1,7 @@
 const subspace = require('../model/subspaceModel');
 const User = require('../model/userModel');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const newsubspace = async (req,res) => {
 
@@ -59,7 +60,26 @@ const newsubspace = async (req,res) => {
     }
 }
 
+const follow= async (req,res)=>{
+    console.log(req.user._id)
+    const result=await subspace.findByIdAndUpdate(req.body._Id,
+        {   $push:{members:req.user._id}},
+            {new:true})
+        if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+        else res.status(200).json({success:true,msg:result})
+}
+
+const unfollow= async (req,res)=>{
+const result=await subspace.findByIdAndUpdate(req.body._Id,
+    {   $pull:{members:req.user._id}},
+        {new:true})
+    if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+    else res.status(200).json({success:true,msg:result})
+}
+
 
 module.exports = {
-    newsubspace
+    newsubspace,
+    follow,
+    unfollow
 }
