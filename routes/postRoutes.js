@@ -3,6 +3,7 @@ const Upload = require('../middleware/upload');
 
 
 const validation = require('../middleware/authveriftoken');
+const ismember = require('../middleware/ismember');
 
 const postController = require('../controller/postController');
 
@@ -16,7 +17,7 @@ router.post('/next',postController.getmoreposts);
 
 router.get('/postform',validation.authverifytoken,postController.postform);
 
-router.post('/newpost',validation.authverifytoken, Upload.uploadImg.single('image'), postController.newpost);
+router.post('/newpost',validation.authverifytoken,Upload.uploadImg.none(),ismember.ismember, Upload.uploadImg.single('image'), postController.newpost);
 
 router.put('/upvote',validation.authverifytoken,postController.upvote);
 
