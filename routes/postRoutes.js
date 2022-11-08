@@ -4,6 +4,7 @@ const ismember = require('../middleware/ismember');
 
 
 const validation = require('../middleware/authveriftoken');
+const ismember = require('../middleware/ismember');
 
 const postController = require('../controller/postController');
 
@@ -11,7 +12,9 @@ const router = express.Router();
 
 router.get('/feed',postController.getfeed);
 
-router.get('/next',postController.getmoreposts);
+router.get('/loggedfeed',validation.authverifytoken,postController.getlogfeed);
+
+router.post('/next',postController.getmoreposts);
 
 router.get('/postform',validation.authverifytoken,postController.postform);
 

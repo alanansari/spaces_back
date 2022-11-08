@@ -25,7 +25,6 @@ const newpost = async (req,res) => {
     try{
         const {subspace,heading,para} = req.body;
 
-
         let filepath = null;
 
         if(req.file !== undefined){
@@ -72,7 +71,7 @@ const getpost = async (req,res) => {
     try{
         const postId = req.params.id;
         
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate('comments').limit(10);
 
         if(!post){
             return res.status(404).json({success:false,msg:'Post not found.'});
@@ -95,6 +94,27 @@ const getfeed = async (req,res) => {
     }
 }
 
+const getlogfeed = async (req,res) => {
+    try {
+
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        token = token.replace(/^Bearer\s+/, "");
+
+        const decode=await jwt.decode(token,"jwtsecret");
+        const user_name=decode.user_name;
+        const user = await User.findOne({user_name});
+        const mysubspaces = user.mysubspaces;
+
+        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
+
+        const posts = await Post.find().sort({createdAt:-1}).limit(10);
+
+        return res.status(200).json({user_name,mysubspaces,topcomm,posts});
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const getmoreposts = async (req,res) => {
     try {
         const {num} = req.body;
@@ -106,66 +126,40 @@ const getmoreposts = async (req,res) => {
 }
 
 const upvote=async (req,res)=>{
-    Post.findByIdAndUpdate(req.body.postId,{
-        $push:{upvotes:req.user._id},
-        $pull:{
-            downvotes:req.user._id
-        }
-    },{
-            new:true
-        }).exec((err,result)=>{
-            if(err){
-                return res.status(404).json({success:false,msg:'Post not found.'});
-            }
-            else{
-                return res.status(200).json(result);
-            }
-        })
-    }
+    const result =  await Post.findByIdAndUpdate(req.body._Id,{
+           $push:{upvotes:req.user._id},
+           $pull:{unupvotes:req.user._id}
+       },{new:true})
+     if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+     else res.status(200).json({success:true,msg:result})
+}
 
 const unupvote=async (req,res)=>{
-    Post.findByIdAndUpdate(req.body.postId,{
-        $pull:{upvotes:req.user._id}},{
-            new:true
-        }).exec((err,result)=>{
-            if(err){
-                return res.status(404).json({success:false,msg:'Post not found.'});
-            }
-            else{
-                return res.status(200).json(result);
-            }
-        })
+   const result=await Post.findByIdAndUpdate(req.body._Id,{
+        $pull:{upvotes:req.user._id}},
+        {new:true})
+        if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+        else res.status(200).json({success:true,msg:result})
     }
 
     const downvote=async (req,res)=>{
-        Post.findByIdAndUpdate(req.body.postId,{
+      const result=await  Post.findByIdAndUpdate(req.body._Id,{
             $push:{downvotes:req.user._id},
-            $pull:{
-                upvotes:req.user._id
-            }},{
+            $pull:{upvotes:req.user._id}},{
                  new:true
-            }).exec((err,result)=>{
-                if(err){
-                    return res.status(404).json({success:false,msg:'Post not found.'});
-                }
-                else{
-                    return res.status(200).json(result);
-                }
-      })
+            })    
+             if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+            else res.status(200).json({success:true,msg:result})
     }
         
     const undownvote=async (req,res)=>{
-        Post.findByIdAndUpdate(req.body.postId,{
-            $pull:{downvotes:req.user._id}},{
+      const result= await Post.findByIdAndUpdate(req.body._Id,{
+            $pull:{downvotes:req.user._id}},
+               {
                     new:true
-                }).exec((err,result)=>{
-                if(err){
-                     return res.status(404).json({success:false,msg:'Post not found.'});
-                }
-                else{
-                    return res.status(200).json(result);
-                }
-            })
+                })    
+                if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+                else res.status(200).json({success:true,msg:result})
     }
     
 
@@ -174,6 +168,7 @@ module.exports = {
     newpost,
     getpost,
     getfeed,
+    getlogfeed,
     getmoreposts,
     upvote,
     unupvote,
