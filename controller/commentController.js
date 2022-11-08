@@ -26,7 +26,8 @@ const comment = async(req,res)=>{
 
         const comment = await Comment.create({
             author: user_name,
-            text
+            text,
+            votes:0
         });
 
         const appendcomm = await Post.findByIdAndUpdate(postId,{
@@ -89,8 +90,48 @@ const reply = async (req,res) => {
     }
 }
 
+const upvote=async (req,res)=>{
+    try{
+        const _id=req.body._Id;
+    const result =  await Comment.updateOne({_id},{
+           $inc:{
+            votes:1
+           }
+       })
+       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+       else {
+       return res.status(200).json({success:true,msg:result})
+    }
+}
+    catch(err)
+{
+    console.log(err);
+}
+}
+const downvote=async (req,res)=>{
+    try{
+        const _id=req.body._Id;
+    const result =  await Comment.updateOne({_id},{
+           $inc:{
+            votes:-1
+           }
+       })
+       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+       else {
+       return res.status(200).json({success:true,msg:result})
+    }
+}
+    catch(err)
+{
+    console.log(err);
+}
+}
+
+
 module.exports = {
     comment,
     replies,
-    reply
+    reply,
+    upvote,
+    downvote
 }

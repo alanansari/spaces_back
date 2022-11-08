@@ -14,5 +14,12 @@ router.post('/:id',validation.authverifytoken,commentController.reply);
 // see replies on a comment
 router.get('/:id',commentController.replies);
 
+//comment id
+router.put('/upvote',commentController.upvote);
+
+router.put('/unupvote',commentController.downvote);
+
+
+
 
 module.exports = router;

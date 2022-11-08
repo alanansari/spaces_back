@@ -141,7 +141,7 @@ const upvote=async (req,res)=>{
 
 
       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { upvotes:req.body._id} })
-      if(!result) return res.status(404).json({success:false,msg:'User not found.'})
+      if(!user) return res.status(404).json({success:false,msg:'User not found.'})
        return res.status(200).json({success:true,msg:result})
     }
 }
@@ -160,7 +160,7 @@ const unupvote=async (req,res)=>{
            }
        })
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._id} })
-     if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
      else res.status(200).json({success:true,msg:result})
 }
 catch(err)
@@ -177,7 +177,7 @@ const downvote=async (req,res)=>{
            }
        })
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { downvotes:req.body._id} })
-     if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
      else res.status(200).json({success:true,msg:result})
 }
 catch(err)
@@ -195,7 +195,7 @@ const undownvote=async (req,res)=>{
            }
        })
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { downvotes:req.body._id} })
-     if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
      else res.status(200).json({success:true,msg:result})
 }
 catch(err)
