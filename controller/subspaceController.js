@@ -75,7 +75,7 @@ const viewsubspace = async (req,res) => {
     try {
         const name = req.params.subspace;
         const subspace = await subSpace.findOne({name});
-        const posts = await Post.find({name});
+        const posts = await Post.find({name}).limit(10);
         return res.status(200).json({subspace,posts});
     } catch (err) {
         
