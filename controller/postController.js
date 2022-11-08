@@ -62,7 +62,7 @@ const getpost = async (req,res) => {
     try{
         const postId = req.params.id;
         
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate('comments').limit(10);
 
         if(!post){
             return res.status(404).json({success:false,msg:'Post not found.'});

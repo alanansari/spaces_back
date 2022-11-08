@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 const subspaceRoutes = require('./routes/subspaceRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 const fs = require('fs');
 
 if (!fs.existsSync('./uploads')){
@@ -14,6 +15,7 @@ const app = express();
 
 // fix for cors
 const cors=require('cors');
+const { comment } = require('./controller/commentController');
 app.use(cors({origin:true}))
 
 
@@ -36,4 +38,5 @@ app.use('/uploads', express.static('uploads'));
 // routes
 app.use('/s',subspaceRoutes);
 app.use('/p',postRoutes);
+app.use('/c',commentRoutes)
 app.use(authRoutes);

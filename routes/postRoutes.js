@@ -12,7 +12,7 @@ router.get('/feed',postController.getfeed);
 
 router.get('/loggedfeed',validation.authverifytoken,postController.getlogfeed);
 
-router.get('/next',postController.getmoreposts);
+router.post('/next',postController.getmoreposts);
 
 router.get('/postform',validation.authverifytoken,postController.postform);
 
