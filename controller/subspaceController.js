@@ -42,6 +42,17 @@ const newsubspace = async (req,res) => {
             createdAt: Date.now()
         });
 
+        const becomemem = await subspace.findOneAndUpdate({name},{
+            $push:{members:req.user._id}
+        },{new:true}).exec((err,result)=>{
+            if(err){
+                return res.status(400).json({success:false,msg:"Not able to add user to subspace"});
+            }
+            else{
+                return res.status(200).json({success:true,msg:`Added member`});
+            }
+        });
+
         const addspace = await User.findOneAndUpdate({user_name},{
             $push:{mysubspaces:name}
         },{new:true}).exec((err,result)=>{

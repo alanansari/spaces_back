@@ -25,7 +25,6 @@ const newpost = async (req,res) => {
     try{
         const {subspace,heading,para} = req.body;
 
-
         let filepath = null;
 
         if(req.file !== undefined){
