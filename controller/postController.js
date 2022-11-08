@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
+const mongoose = require('mongoose');
 
 const postform = async(req,res)=>{
     try {
@@ -47,10 +48,20 @@ const newpost = async (req,res) => {
             heading,
             para,
             imgpath : filepath,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            votes:0
         });
-
-        const space = await subSpace.findOneAndUpdate(subspace,{},{});
+        console.log(post);
+        const addinsubspace=await subSpace.updateOne({name:subspace},{
+            $push:{
+                posts:post._id
+            }
+        })
+        const addinuser=await User.updateOne({user_name:req.user.user_name},{
+            $push:{
+                mysubspaces:subspace
+            }
+        })
     
         return res.status(200).json({success:true,msg:'Posted!'});
 
@@ -118,41 +129,80 @@ const getmoreposts = async (req,res) => {
 }
 
 const upvote=async (req,res)=>{
-    const result =  await Post.findByIdAndUpdate(req.body._Id,{
-           $push:{upvotes:req.user._id},
-           $pull:{unupvotes:req.user._id}
-       },{new:true})
-     if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-     else res.status(200).json({success:true,msg:result})
+    try{
+        const _id=req.body._Id;
+    const result =  await Post.updateOne({_id},{
+           $inc:{
+            votes:1
+           }
+       })
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       else {
+
+
+      const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { upvotes:req.body._id} })
+      if(!user) return res.status(404).json({success:false,msg:'User not found.'})
+       return res.status(200).json({success:true,msg:result})
+    }
+}
+    catch(err)
+{
+    console.log(err);
+}
 }
 
 const unupvote=async (req,res)=>{
-   const result=await Post.findByIdAndUpdate(req.body._Id,{
-        $pull:{upvotes:req.user._id}},
-        {new:true})
-        if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-        else res.status(200).json({success:true,msg:result})
-    }
-
-    const downvote=async (req,res)=>{
-      const result=await  Post.findByIdAndUpdate(req.body._Id,{
-            $push:{downvotes:req.user._id},
-            $pull:{upvotes:req.user._id}},{
-                 new:true
-            })    
-             if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-            else res.status(200).json({success:true,msg:result})
-    }
+    try{
+        const _id=req.body._Id;
+    const result =  await Post.updateOne({_id},{
+        $inc:{
+            votes:-1
+           }
+       })
+       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._id} })
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+     else res.status(200).json({success:true,msg:result})
+}
+catch(err)
+{
+    console.log(err);
+}
+}
+const downvote=async (req,res)=>{
+    try{
+        const _id=req.body._Id;
+    const result =  await Post.updateOne({_id},{
+           inc:{
+            votes:-1
+           }
+       })
+       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { downvotes:req.body._id} })
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+     else res.status(200).json({success:true,msg:result})
+}
+catch(err)
+{
+    console.log(err);
+}
+}
         
-    const undownvote=async (req,res)=>{
-      const result= await Post.findByIdAndUpdate(req.body._Id,{
-            $pull:{downvotes:req.user._id}},
-               {
-                    new:true
-                });
-                if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-                else res.status(200).json({success:true,msg:result})
-    }
+const undownvote=async (req,res)=>{
+    try{
+        const _id=req.body._Id;
+    const result =  await Post.updateOne({_id},{
+           $inc:{
+            votes:1
+           }
+       })
+       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { downvotes:req.body._id} })
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+     else res.status(200).json({success:true,msg:result})
+}
+catch(err)
+{
+    console.log(err);
+}
+}
     
 
 module.exports = {
