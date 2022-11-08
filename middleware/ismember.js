@@ -9,12 +9,15 @@ const ismember=async (req,res,next)=>{
     }
     else{
         try{
-            const member=await result.find({members:req.user.id})
+            console.log(result);
+            const id = req.user._id;
+            const member=await result.members.find(id);
             next();
         }
         catch(err)
         {
-            return res.status(400).send("You are mot a member");
+            console.log(err);
+            return res.status(400).send("You are not a member");
         }
     }
 }
