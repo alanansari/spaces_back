@@ -8,5 +8,7 @@ const router = express.Router();
 
 router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('image'),subspaceController.newsubspace);
 
+router.get('/:subspace',subspaceController.viewsubspace);
+
 
 module.exports = router;
