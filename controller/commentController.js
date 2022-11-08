@@ -50,7 +50,7 @@ const replies = async (req,res) => {
         if(!comment)
             return res.status(404).json({success:false,msg:'Comment not found.'});
 
-        return res.status(200).json(comment);
+        return res.status(200).json(comment.childId);
         
     } catch (err) {
         return res.status(400).json({success:false,msg:`${err}`});

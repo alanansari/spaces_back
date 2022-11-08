@@ -9,20 +9,27 @@ const storage = multer.diskStorage({
     }
 });
 
+let maxSize = 5 * 1024 * 1024;
+
 const fileFilter = (req,file,cb) => {
     if(file.mimetype === 'image/jpeg'||
     file.mimetype === 'image/jpg'||
     file.mimetype === 'image/png'||
-    file.mimetype === 'video/mp4')
+    file.mimetype === 'video/mp4'){
+        if(file.mimetype === 'video/mp4')
+            maxSize = 50 * 1024 * 1024;
         cb(null,true);
+    }
     else
         cb(null,false);
 }
 
+
+
 const uploadImg = multer({
     storage,
     limits:{
-        fileSize:  5 * 1024 * 1024
+        fileSize:  maxSize
     },
     fileFilter
 });
