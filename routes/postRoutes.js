@@ -1,6 +1,5 @@
 const express = require('express');
 const Upload = require('../middleware/upload');
-const ismember = require('../middleware/ismember');
 
 
 const validation = require('../middleware/authveriftoken');

@@ -108,8 +108,7 @@ const result=await subspace.findByIdAndUpdate(req.body._Id,
 
 module.exports = {
     newsubspace,
-    viewsubspace
-    newsubspace,
+    viewsubspace,
     follow,
     unfollow
 }
