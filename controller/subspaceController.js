@@ -1,5 +1,7 @@
-const subspace = require('../model/subspaceModel');
+const subSpace = require('../model/subspaceModel');
 const User = require('../model/userModel');
+const Post = require('../model/postModel');
+
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
@@ -24,7 +26,7 @@ const newsubspace = async (req,res) => {
         if(!user)
             return res.status(400).json({success:false,msg:'User not found!'});
 
-        const oldspace = await subspace.findOne({name});
+        const oldspace = await subSpace.findOne({name});
 
         if(oldspace) return res.status(400).json({success:false,msg:`${name} is already taken.`});
 
@@ -34,7 +36,7 @@ const newsubspace = async (req,res) => {
             filepath = 'uploads/' + req.file.filename;
         }
 
-        const space = await subspace.create({
+        const space = await subSpace.create({
             admin: user.user_name,
             name,
             about,
@@ -43,7 +45,7 @@ const newsubspace = async (req,res) => {
             createdAt: Date.now()
         });
 
-        const becomemem = await subspace.findOneAndUpdate({name},{
+        const becomemem = await subSpace.findOneAndUpdate({name},{
             $push:{members:req.user._id}
         },{new:true}).exec((err,result)=>{
             if(err){
@@ -71,6 +73,21 @@ const newsubspace = async (req,res) => {
     }
 }
 
+
+const viewsubspace = async (req,res) => {
+    try {
+        const name = req.params.subspace;
+        const subspace = await subSpace.findOne({name});
+        const posts = await Post.find({name});
+        return res.status(200).json({subspace,posts});
+    } catch (err) {
+        
+        console.log(err);
+        return res.status(400);
+    }
+}
+
+
 const follow= async (req,res)=>{
     console.log(req.user._id)
     const result=await subspace.findByIdAndUpdate(req.body._Id,
@@ -90,6 +107,8 @@ const result=await subspace.findByIdAndUpdate(req.body._Id,
 
 
 module.exports = {
+    newsubspace,
+    viewsubspace
     newsubspace,
     follow,
     unfollow
