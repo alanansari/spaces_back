@@ -49,6 +49,8 @@ const newpost = async (req,res) => {
             imgpath : filepath,
             createdAt: Date.now()
         });
+
+        const space = await subSpace.findOneAndUpdate(subspace,{},{});
     
         return res.status(200).json({success:true,msg:'Posted!'});
 
@@ -147,7 +149,7 @@ const unupvote=async (req,res)=>{
             $pull:{downvotes:req.user._id}},
                {
                     new:true
-                })    
+                });
                 if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
                 else res.status(200).json({success:true,msg:result})
     }
