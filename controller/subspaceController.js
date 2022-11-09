@@ -67,6 +67,7 @@ const newsubspace = async (req,res) => {
         
     } catch (err){
         console.log(err);
+        return res.status(400).json(err);
     }
 }
 
@@ -78,9 +79,8 @@ const viewsubspace = async (req,res) => {
         const posts = await Post.find({subspace:name}).limit(10);
         return res.status(200).json({subspace,posts});
     } catch (err) {
-        
         console.log(err);
-        return res.status(400);
+        return res.status(400).json(err);
     }
 }
 
@@ -94,7 +94,7 @@ const viewmoresubspace = async (req,res) => {
     } catch (err) {
         
         console.log(err);
-        return res.status(400);
+        return res.status(400).json(err);
     }
 }
 
@@ -134,7 +134,7 @@ const search = async (req,res) => {
         return res.status(200).json(subs);
     } catch (err) {
         console.log(err);
-        return res.status(400);
+        return res.status(400).json(err);
     }
 }
 

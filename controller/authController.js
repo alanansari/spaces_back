@@ -288,6 +288,14 @@ const resendotp=async (req,res)=>{
   }
 }
 
+const editpage = async(req,res)=>{
+  try {
+    
+  } catch (err) {
+    
+  }
+}
+
 module.exports = {
     signup,
     login,
@@ -295,5 +303,6 @@ module.exports = {
     forgotpassword,
     changepassword,
     resendotp,
-    fverify
+    fverify,
+    editpage
 }
