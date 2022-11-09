@@ -37,6 +37,28 @@ const comment = async(req,res)=>{
         return res.status(200).json({success:true,msg:'Posted Comment'});
     } catch (err) {
         console.log(err);
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
+}
+
+const getpostcomm = async(req,res) => {
+    try {
+        const postId = req.params.id;
+        const num = Number(req.params.num);
+        const post = await Post.findById(postId).populate('comments');
+
+        if(!post){
+            return res.status(404).json({success:false,msg:'Post not found.'});
+        }
+
+        let {comments} = post;
+
+        comments = comments.slice(num*10,num+10);
+
+        return res.status(200).json({comments});
+
+    } catch (err) {
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -44,13 +66,18 @@ const replies = async (req,res) => {
     try {
 
         const commId = req.params.id;
+        const num = Number(req.params.num);
 
         const comment = await Comment.findById(commId).populate('childId').limit(10);
 
         if(!comment)
             return res.status(404).json({success:false,msg:'Comment not found.'});
 
-        return res.status(200).json(comment.childId);
+        let comments = comment.childId;
+        comments.sort({votes:-1}).sort({createdAt:-1});
+        comments = comments.slice(num*10,num+10);
+
+        return res.status(200).json({comments});
         
     } catch (err) {
         return res.status(400).json({success:false,msg:`${err}`});
@@ -106,6 +133,7 @@ const upvote=async (req,res)=>{
     catch(err)
 {
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
 }
 }
 const downvote=async (req,res)=>{
@@ -124,12 +152,14 @@ const downvote=async (req,res)=>{
     catch(err)
 {
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
 }
 }
 
 
 module.exports = {
     comment,
+    getpostcomm,
     replies,
     reply,
     upvote,
