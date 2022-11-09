@@ -10,6 +10,10 @@ router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('i
 
 router.get('/:subspace',subspaceController.viewsubspace);
 
+router.post('/search',subspaceController.search);
+
+router.post('/:subspace',subspaceController.viewmoresubspace);
+
 router.put('/follow',validation.authverifytoken,subspaceController.follow);
 
 router.put('/unfollow',validation.authverifytoken,subspaceController.unfollow);
