@@ -75,7 +75,21 @@ const viewsubspace = async (req,res) => {
     try {
         const name = req.params.subspace;
         const subspace = await subSpace.findOne({name});
-        const posts = await Post.find({name}).limit(10);
+        const posts = await Post.find({subspace:name}).limit(10);
+        return res.status(200).json({subspace,posts});
+    } catch (err) {
+        
+        console.log(err);
+        return res.status(400);
+    }
+}
+
+const viewmoresubspace = async (req,res) => {
+    try {
+        const name = req.params.subspace;
+        const {num} = req.body;
+        const subspace = await subSpace.findOne({name});
+        const posts = await Post.find({subspace:name}).skip(10*num).limit(10);
         return res.status(200).json({subspace,posts});
     } catch (err) {
         
@@ -102,10 +116,34 @@ const result=await subspace.findByIdAndUpdate(req.body._Id,
     else res.status(200).json({success:true,msg:result})
 }
 
+const search = async (req,res) => {
+    try {
+        const {text} = req.body;
+        const filter = {$regex: text ,'$options': 'i'};
+        let docs = await subSpace.aggregate([
+            { $match:{name: filter} }
+          ]);
+        
+        if(!docs) return res.status(400).json({msg:'Not able to search.'});
+
+        const subs = [];
+        docs.forEach(obj=>{
+            subs.push(obj.name);
+        });
+
+        return res.status(200).json(subs);
+    } catch (err) {
+        console.log(err);
+        return res.status(400);
+    }
+}
+
 
 module.exports = {
     newsubspace,
     viewsubspace,
+    viewmoresubspace,
     follow,
+    search,
     unfollow
 }
