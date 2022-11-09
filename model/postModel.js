@@ -21,7 +21,8 @@ const postSchema = new mongoose.Schema({
         type: String
     },
     votes:{
-        type:Number
+        type:Number,
+        default: 0
     },
     comments: [{
         type:ObjectId,

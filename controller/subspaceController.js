@@ -32,9 +32,12 @@ const newsubspace = async (req,res) => {
 
         let filepath = null;
 
-        if(req.file !== undefined){
-            filepath = 'uploads/' + req.file.filename;
-        }
+        if(req.file === undefined)
+            return res.status(400).json({success:false,msg:"Image required."});
+
+        
+        filepath = 'uploads/' + req.file.filename;
+        
 
         const space = await subSpace.create({
             admin: user.user_name,
@@ -139,7 +142,7 @@ const search = async (req,res) => {
         const filter = {$regex: text ,'$options': 'i'};
         let docs = await subSpace.aggregate([
             { $match:{name: filter} }
-          ]);
+          ]).limit(5);
         
         if(!docs) return res.status(400).json({msg:'Not able to search.'});
 
