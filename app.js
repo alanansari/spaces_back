@@ -15,8 +15,7 @@ const app = express();
 
 // fix for cors
 const cors=require('cors');
-const { comment } = require('./controller/commentController');
-app.use(cors({origin:true}))
+app.use(cors({origin:true}));
 
 
 app.use(express.json());
