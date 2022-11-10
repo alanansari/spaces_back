@@ -11,18 +11,10 @@ const userSchema = new mongoose.Schema({
     mysubspaces: [{type: String}],
     myposts: [{type: String}],
     token: { type: String },
-    upvotes:[{type:ObjectId,ref:"user"}],
-    downvotes:[{type:ObjectId,ref:"user"}],
-    cupvotes:[{type:ObjectId,ref:"user"}],
-    cdownvotes:[{type:ObjectId,ref:"user"}],
-    firstname:
-    {
-      type:String
-    },
-    lastnamename:
-    {
-      type:String
-    }
+    upvotes:[{type:ObjectId,ref:"posts"}],
+    downvotes:[{type:ObjectId,ref:"posts"}],
+    cupvotes:[{type:ObjectId,ref:"posts"}],
+    cdownvotes:[{type:ObjectId,ref:"posts"}]
 
   });
 

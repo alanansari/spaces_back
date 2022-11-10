@@ -21,7 +21,13 @@ router.post('/forgotpassword/otpverify',authController.fverify);
 
 router.post('/forgotpassword/otpverify/changepassword',validation.authverifytoken,authController.changepassword);
 
-router.put('/profileupdate',validation.authverifytoken,authController.profileupdate);
+router.post('/updatename',validation.authverifytoken,authController.updatename);
+
+router.post('/emailupdate',validation.authverifytoken,authController.emailupdate);
+
+router.post('/emailupdateotp',validation.authverifytoken,authController.emailupdateotp);
+
+
 
 
 

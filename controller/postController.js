@@ -217,6 +217,10 @@ const dltpost=async (req,res)=>{
     try{
         const {_id}=req.body;
         const post=await Post.deleteOne({_id});
+        if(post)
+        {
+            return res.status(200).json({success:true,msg:"Post deleted"})
+        }
     }
     catch(err)
     {
