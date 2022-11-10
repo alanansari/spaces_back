@@ -98,34 +98,6 @@ const viewmoresubspace = async (req,res) => {
         return res.status(400).json(err);
     }
 }
-const viewmoresubspace = async (req,res) => {
-    try {
-        const name = req.params.subspace;
-        const num=req.body.num;
-        const subspace = await subSpace.findOne({name});
-        const posts = await Post.find({subspace:subspace.posts}).skip(10*num).limit(10);
-        const user=req.user;
-        return res.status(200).json({user,subspace,posts});
-    } catch (err) {
-        
-        console.log(err);
-        return res.status(400);
-    }
-}
-const viewmoresubspace = async (req,res) => {
-    try {
-        const name = req.params.subspace;
-        const num=req.body.num;
-        const subspace = await subSpace.findOne({name});
-        const posts = await Post.find({subspace:subspace.posts}).skip(10*num).limit(10);
-        const user=req.user;
-        return res.status(200).json({user,subspace,posts});
-    } catch (err) {
-        
-        console.log(err);
-        return res.status(400);
-    }
-}
 
 
 const follow= async (req,res)=>{
@@ -169,19 +141,18 @@ const moretopcommunities=async (req,res)=>{
 
         return res.status(200).json({top});
     } catch (err) {
-        const search = async (req,res) => {
+        console.log(err);
+        return res.status(400);
+    }
+}
+
+const search = async (req,res) => {
     try {
         const {text} = req.body;
         const filter = {$regex: text ,'$options': 'i'};
         let docs = await subSpace.aggregate([
             { $match:{name: filter} }
           ]);
-        
-        console.log(err);
-        return res.status(400);
-    }
-}
-
 
         if(!docs) return res.status(400).json({msg:'Not able to search.'});
 
