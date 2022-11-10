@@ -2,17 +2,35 @@ const mongoose = require('mongoose');
 const {ObjectId} = mongoose.Schema.Types;
 
 const postSchema = new mongoose.Schema({
-    author: { type: String,required:true},
-    subspace: {type: String,required:true},
-    heading: {type: String,required:true},
-    para: {type: String},
-    imgpath: {type: String},
-    votes:
-    {
-        type:Number
+    author: {
+        type: String,
+        required:true
     },
-    comments: [{type:ObjectId,ref:"comments"}],
-    createdAt: {type: Number}
+    subspace: {
+        type: String,
+        required:true
+    },
+    heading: {
+        type: String,
+        required:true
+    },
+    para: {
+        type: String
+    },
+    imgpath: {
+        type: String
+    },
+    votes:{
+        type:Number,
+        default: 0
+    },
+    comments: [{
+        type:ObjectId,
+        ref:"comments"
+    }],
+    createdAt: {
+        type: Number
+    }
 });
 
 

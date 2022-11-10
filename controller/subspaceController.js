@@ -32,9 +32,12 @@ const newsubspace = async (req,res) => {
 
         let filepath = null;
 
-        if(req.file !== undefined){
-            filepath = 'uploads/' + req.file.filename;
-        }
+        if(req.file === undefined)
+            return res.status(400).json({success:false,msg:"Image required."});
+
+        
+        filepath = 'uploads/' + req.file.filename;
+        
 
         const space = await subSpace.create({
             admin: user.user_name,
@@ -101,6 +104,21 @@ const viewmoresubspace = async (req,res) => {
 
 
 const follow= async (req,res)=>{
+    try{
+
+        const subspace = req.body.subspace;
+
+        const result=await subSpace.findOneAndUpdate({name:subspace},
+        {$push:{members:req.user._id}},
+        {new:true});
+
+        if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
+
+        else res.status(200).json({success:true,msg:"followed"});
+
+    } catch (err){
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
     console.log(req.user._id)
     const result=await subspace.findByIdAndUpdate(req.body._Id,
         {   $push:{members:req.user._id},
@@ -112,13 +130,21 @@ const follow= async (req,res)=>{
 }
 
 const unfollow= async (req,res)=>{
-const result=await subspace.findByIdAndUpdate(req.body._Id,
-    {   $pull:{members:req.user._id},
+    try{
+        const subspace = req.body.subspace;
+
+        const result=await subSpace.findOneAndUpdate({name:subspace},
+        {$pull:{members:req.user._id},
         $inc:{followers:-1} 
     },
-        {new:true})
-    if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-    else res.status(200).json({success:true,msg:result})
+        {new:true});
+
+        if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
+
+        else res.status(200).json({success:true,msg:"unfollowed"});
+    } catch(err){
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
 }
 
 const topcommunities=async (req,res)=>{
@@ -152,8 +178,8 @@ const search = async (req,res) => {
         const filter = {$regex: text ,'$options': 'i'};
         let docs = await subSpace.aggregate([
             { $match:{name: filter} }
-          ]);
-
+          ]).limit(5);
+        
         if(!docs) return res.status(400).json({msg:'Not able to search.'});
 
         const subs = [];
