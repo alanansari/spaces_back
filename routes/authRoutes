@@ -21,4 +21,8 @@ router.post('/forgotpassword/otpverify',authController.fverify);
 
 router.post('/forgotpassword/otpverify/changepassword',validation.authverifytoken,authController.changepassword);
 
+router.post('/profileupdate',validation.authverifytoken,authController.profileupdate);
+
+
+
 module.exports = router;

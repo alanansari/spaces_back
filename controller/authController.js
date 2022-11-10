@@ -288,7 +288,7 @@ const resendotp=async (req,res)=>{
   }
 }
 
-const profilesetup=async (req,res)=>{
+const profileupdate=async (req,res)=>{
   try{
   const {firstname,lastname}=req.body;
   if(!firstname)
@@ -321,5 +321,6 @@ module.exports = {
     forgotpassword,
     changepassword,
     resendotp,
-    fverify
+    fverify,
+    profileupdate
 }

@@ -213,6 +213,17 @@ catch(err)
     console.log(err);
 }
 }
+
+const dltpost=async (req,res)=>{
+    try{
+        const {_id}=req.body;
+        const post=await Post.deleteOne({_id});
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
+}
     
 
 module.exports = {
@@ -225,5 +236,6 @@ module.exports = {
     upvote,
     unupvote,
     downvote,
-    undownvote
+    undownvote,
+    dltpost
 }
