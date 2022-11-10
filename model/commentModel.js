@@ -11,7 +11,8 @@ const commentSchema = new mongoose.Schema({
         required:true
     },
     votes:{
-        type:Number
+        type:Number,
+        default: 0
     },
     childId:[{
         type:ObjectId,
