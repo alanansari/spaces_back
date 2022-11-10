@@ -27,6 +27,8 @@ router.post('/emailupdate',validation.authverifytoken,authController.emailupdate
 
 router.post('/emailupdateotp',validation.authverifytoken,authController.emailupdateotp);
 
+router.post('/profilephoto',validation.authverifytoken,Upload.uploadImg.single('image'),authController.imageupdate);
+
 
 
 

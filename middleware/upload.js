@@ -1,8 +1,16 @@
 const multer = require('multer');
 
-const storage = multer.diskStorage({
+const storageposts = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, './uploads');
+      cb(null, './uploads/posts');
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+const storageprofile = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './uploads/profile');
     },
     filename: function (req, file, cb) {
       cb(null, Date.now() + '-' + file.originalname);
@@ -23,17 +31,35 @@ const fileFilter = (req,file,cb) => {
     else
         cb(null,false);
 }
+const imageFilter = (req,file,cb) => {
+    if(file.mimetype === 'image/jpeg'||
+    file.mimetype === 'image/jpg'||
+    file.mimetype === 'image/png'){
+    maxSixe=2*1024*1024;
+        cb(null,true);
+    }
+    else
+        cb(null,false);
+}
 
 
 
-const uploadImg = multer({
-    storage,
+const uploadposts = multer({
+    storageposts,
     limits:{
         fileSize:  maxSize
     },
     fileFilter
 });
+const uploadImg = multer({
+    storageprofile,
+    limits:{
+        fileSize:  maxSize
+    },
+    imageFilter
+});
 
 module.exports = {
-    uploadImg
+    uploadImg,
+    uploadposts
 }

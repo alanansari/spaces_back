@@ -30,7 +30,7 @@ const newpost = async (req,res) => {
         let filepath = null;
 
         if(req.file !== undefined){
-            filepath = 'uploads/' + req.file.filename;
+            filepath = 'uploads/posts/' + req.file.filename;
         }
 
 
@@ -220,8 +220,8 @@ catch(err)
 
 const dltpost=async (req,res)=>{
     try{
-        const {_id}=req.body;
-        const post=await Post.deleteOne({_id});
+        const id =req.params.id;
+        const post=await Post.deleteOne({_id:id});
         if(post)
         {
             return res.status(200).json({success:true,msg:"Post deleted"})
@@ -230,6 +230,7 @@ const dltpost=async (req,res)=>{
     catch(err)
     {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
     

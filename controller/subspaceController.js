@@ -132,7 +132,7 @@ const follow= async (req,res)=>{
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
 
-        else res.status(200).json({success:true,msg:"followed"});
+        else res.status(200).json({success:true,msg:"followed",});
 
     } catch (err){
         return res.status(400).json({success:false,msg:`${err}`});
