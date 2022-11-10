@@ -18,7 +18,8 @@ const subspaceSchema = new mongoose.Schema({
         type:String
     },
     imgpath:{
-        type:String
+        type:String,
+        default: null
     },
     members: [{
         type: ObjectId,
