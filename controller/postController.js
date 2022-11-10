@@ -182,10 +182,13 @@ const downvote=async (req,res)=>{
             votes:-1
            }
        })
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       else {
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { downvotes:req.body._id} })
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     else res.status(200).json({success:true,msg:result})
+     return res.status(200).json({success:true,msg:result})
 }
+    }
 catch(err)
 {
     console.log(err);
@@ -201,15 +204,33 @@ const undownvote=async (req,res)=>{
             votes:1
            }
        })
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       else {
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { downvotes:req.body._id} })
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     else res.status(200).json({success:true,msg:result})
+     return res.status(200).json({success:true,msg:result})
 }
+    }
 catch(err)
 {
     console.log(err);
     return res.status(400).json(err);
 }
+}
+
+const dltpost=async (req,res)=>{
+    try{
+        const {_id}=req.body;
+        const post=await Post.deleteOne({_id});
+        if(post)
+        {
+            return res.status(200).json({success:true,msg:"Post deleted"})
+        }
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
 }
     
 
@@ -223,5 +244,6 @@ module.exports = {
     upvote,
     unupvote,
     downvote,
-    undownvote
+    undownvote,
+    dltpost
 }

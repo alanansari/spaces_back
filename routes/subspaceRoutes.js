@@ -8,14 +8,20 @@ const router = express.Router();
 
 router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('image'),subspaceController.newsubspace);
 
-router.get('/:subspace',subspaceController.viewsubspace);
-
 router.post('/search',subspaceController.search);
-
-router.post('/:subspace',subspaceController.viewmoresubspace);
 
 router.put('/follow',validation.authverifytoken,subspaceController.follow);
 
 router.put('/unfollow',validation.authverifytoken,subspaceController.unfollow);
+
+router.get('/topcommunities',subspaceController.topcommunities);
+
+router.post('/topcommunities',subspaceController.moretopcommunities);
+
+router.post('/:subspace',subspaceController.viewmoresubspace);
+
+router.get('/:subspace',subspaceController.viewsubspace);
+
+
 
 module.exports = router;

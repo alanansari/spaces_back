@@ -45,7 +45,8 @@ const newsubspace = async (req,res) => {
             about,
             rules,
             imgpath: filepath,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            followers:1
         });
 
         const becomemem = await subSpace.findOneAndUpdate({name},{
@@ -119,10 +120,14 @@ const viewmoresubspace = async (req,res) => {
 const follow= async (req,res)=>{
     try{
 
-        const subspace = req.body.subspace;
+        const {subspace} = req.body;
 
         const result=await subSpace.findOneAndUpdate({name:subspace},
-        {$push:{members:req.user._id}},
+        {$push:{members:req.user._id},
+         $inc:{
+            followers:1
+         }
+        },
         {new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
@@ -139,7 +144,10 @@ const unfollow= async (req,res)=>{
         const subspace = req.body.subspace;
 
         const result=await subSpace.findOneAndUpdate({name:subspace},
-        {$pull:{members:req.user._id}},
+        {$pull:{members:req.user._id},
+        $inc:{
+            followers:-1
+         }},
         {new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
@@ -147,6 +155,31 @@ const unfollow= async (req,res)=>{
         else res.status(200).json({success:true,msg:"unfollowed"});
     } catch(err){
         return res.status(400).json({success:false,msg:`${err}`});
+    }
+}
+
+const topcommunities=async (req,res)=>{
+    try{
+     const top=await subSpace.find().sort({"followers":1}).limit(10);
+
+
+        return res.status(200).json({top});
+    } catch (err) {
+        
+        console.log(err);
+        return res.status(400);
+    }
+}
+const moretopcommunities=async (req,res)=>{
+    try{
+        const {num}=req.body;
+     const top=await subSpace.find().sort({"followers":1}).skip(10*num).limit(10);
+
+
+        return res.status(200).json({top});
+    } catch (err) {
+        console.log(err);
+        return res.status(400);
     }
 }
 
@@ -179,5 +212,7 @@ module.exports = {
     viewmoresubspace,
     follow,
     search,
-    unfollow
+    unfollow,
+    topcommunities,
+    moretopcommunities
 }
