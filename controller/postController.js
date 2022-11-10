@@ -119,7 +119,27 @@ const getlogfeed = async (req,res) => {
 
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
 
-        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts});
+        const upvoted = [];
+
+        // posts.forEach(obj=>{
+        //     const voted = User.find(user_name,{upvotes:{$in: [obj._id]}}).count();
+        //     if(voted>0)
+        //         check.push(true);
+        //     else
+        //         check.push(false);
+        // });
+        
+        for(let i=0;i<posts.length;i++){
+            let bool = false;
+            for(let j=0;j<user.upvotes.length;j++){
+                if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                    bool = true;
+                }
+            }
+            upvoted.push(bool);
+        }
+
+        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
