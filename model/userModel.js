@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
     email_verify: {
       type: Boolean
     },
+    displaypic:{
+      type: String,
+      default: null
+    },
     mailedOTP: {
       type: String
     },

@@ -80,8 +80,22 @@ const viewsubspace = async (req,res) => {
     try {
         const name = req.params.subspace;
         const subspace = await subSpace.findOne({name});
+        let user_name = null; let user;
+        if(!subspace)
+            return res.status(404).json({success:false,msg:"Subspace not found"});
+
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+
+        if(token){
+            token = token.replace(/^Bearer\s+/, "");
+
+            const decode=await jwt.decode(token,"jwtsecret");
+            user_name=decode.user_name;
+            user = await User.findOne({user_name});
+        }
+        const imgpath = user.displaypic;
         const posts = await Post.find({subspace:name}).limit(10);
-        return res.status(200).json({subspace,posts});
+        return res.status(200).json({user_name,imgpath,subspace,posts});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
