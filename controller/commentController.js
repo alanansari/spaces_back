@@ -90,7 +90,7 @@ const reply = async (req,res) => {
     }
 }
 
-const upvote=async (req,res)=>{
+const cupvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
     const result =  await Comment.updateOne({_id},{
@@ -100,15 +100,17 @@ const upvote=async (req,res)=>{
        })
        if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
        else {
-       return res.status(200).json({success:true,msg:result})
-    }
-}
+        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:req.body._id} })
+      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+      return res.status(200).json({success:true,msg:result})
+ }
+     }
     catch(err)
 {
     console.log(err);
 }
 }
-const downvote=async (req,res)=>{
+const cunupvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
     const result =  await Comment.updateOne({_id},{
@@ -118,8 +120,52 @@ const downvote=async (req,res)=>{
        })
        if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
        else {
-       return res.status(200).json({success:true,msg:result})
-    }
+        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:req.body._id} })
+      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+      return res.status(200).json({success:true,msg:result})
+ }
+     }
+    catch(err)
+{
+    console.log(err);
+}
+}
+const cdownvote=async (req,res)=>{
+    try{
+        const _id=req.body._Id;
+    const result =  await Comment.updateOne({_id},{
+           $inc:{
+            votes:-1
+           }
+       })
+       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+       else {
+        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { cdownvotes:req.body._id} })
+      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+      return res.status(200).json({success:true,msg:result})
+ }
+     
+}
+    catch(err)
+{
+    console.log(err);
+}
+}
+const cundownvote=async (req,res)=>{
+    try{
+        const _id=req.body._Id;
+    const result =  await Comment.updateOne({_id},{
+           $inc:{
+            votes:1
+           }
+       })
+       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+       else {
+        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cdownvotes:req.body._id} })
+      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+      return res.status(200).json({success:true,msg:result})
+ }
+     
 }
     catch(err)
 {
@@ -132,6 +178,8 @@ module.exports = {
     comment,
     replies,
     reply,
-    upvote,
-    downvote
+    cupvote,
+    cdownvote,
+    cunupvote,
+    cundownvote,
 }

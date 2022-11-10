@@ -78,7 +78,21 @@ const viewsubspace = async (req,res) => {
     try {
         const name = req.params.subspace;
         const subspace = await subSpace.findOne({name});
-        const posts = await Post.find({name});
+        const posts = await Post.find({subspace:subspace.posts}).limit(10);
+        const user=req.user;
+        return res.status(200).json({user,subspace,posts});
+    } catch (err) {
+        
+        console.log(err);
+        return res.status(400);
+    }
+}
+const viewmoresubspace = async (req,res) => {
+    try {
+        const name = req.params.subspace;
+        const num=req.body.num;
+        const subspace = await subSpace.findOne({name});
+        const posts = await Post.find({subspace:subspace.posts}).skip(10*num).limit(10);
         const user=req.user;
         return res.status(200).json({user,subspace,posts});
     } catch (err) {
@@ -110,6 +124,7 @@ const result=await subspace.findByIdAndUpdate(req.body._Id,
 module.exports = {
     newsubspace,
     viewsubspace,
+    viewmoresubspace,
     follow,
     unfollow
 }

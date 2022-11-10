@@ -10,8 +10,12 @@ router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('i
 
 router.get('/:subspace',validation.authverifytoken,subspaceController.viewsubspace);
 
+router.get('/viewmore/:subspace',validation.authverifytoken,subspaceController.viewsubspace);
+
 router.put('/follow',validation.authverifytoken,subspaceController.follow);
 
 router.put('/unfollow',validation.authverifytoken,subspaceController.unfollow);
+
+
 
 module.exports = router;

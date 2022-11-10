@@ -288,6 +288,32 @@ const resendotp=async (req,res)=>{
   }
 }
 
+const profilesetup=async (req,res)=>{
+  try{
+  const {firstname,lastname}=req.body;
+  if(!firstname)
+  {
+    firstname=req.user.firstname;
+  }
+else if(!lastname)
+  {
+    lastname=req.user.lastname;
+  }
+  
+  const user=await User.updateOne({user_name:req.user.user_name},{
+    $set:{
+      firstname,
+      lastname
+    }
+  })
+
+}
+catch(err)
+{
+  console.log(err);
+}
+}
+
 module.exports = {
     signup,
     login,

@@ -15,9 +15,11 @@ router.post('/:id',validation.authverifytoken,commentController.reply);
 router.get('/:id',commentController.replies);
 
 //comment id
-router.put('/upvote',commentController.upvote);
+router.put('/cupvote',commentController.cupvote);
 
-router.put('/unupvote',commentController.downvote);
+router.put('/cunupvote',commentController.cunupvote);
+router.put('/cdownvote',commentController.cdownvote);
+router.put('/cundownvote',commentController.cundownvote);
 
 
 

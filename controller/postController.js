@@ -59,6 +59,7 @@ const newpost = async (req,res) => {
         })
         const addinuser=await User.updateOne({user_name:req.user.user_name},{
             $push:{
+                myposts:post._id,
                 mysubspaces:subspace
             }
         })
@@ -159,9 +160,12 @@ const unupvote=async (req,res)=>{
             votes:-1
            }
        })
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       else {
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._id} })
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     else res.status(200).json({success:true,msg:result})
+     return res.status(200).json({success:true,msg:result})
+       }
 }
 catch(err)
 {
@@ -176,10 +180,13 @@ const downvote=async (req,res)=>{
             votes:-1
            }
        })
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       else {
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { downvotes:req.body._id} })
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     else res.status(200).json({success:true,msg:result})
+     return res.status(200).json({success:true,msg:result})
 }
+    }
 catch(err)
 {
     console.log(err);
@@ -194,10 +201,13 @@ const undownvote=async (req,res)=>{
             votes:1
            }
        })
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       else {
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { downvotes:req.body._id} })
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     else res.status(200).json({success:true,msg:result})
+     return res.status(200).json({success:true,msg:result})
 }
+    }
 catch(err)
 {
     console.log(err);
