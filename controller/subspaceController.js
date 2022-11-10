@@ -92,9 +92,9 @@ const viewsubspace = async (req,res) => {
             user_name=decode.user_name;
             user = await User.findOne({user_name});
         }
-        const imgpath = user.imgpath;
+        const imgpath = user.displaypic;
         const posts = await Post.find({subspace:name}).limit(10);
-        return res.status(200).json({user_name,subspace,posts});
+        return res.status(200).json({user_name,imgpath,subspace,posts});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
