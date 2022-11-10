@@ -4,6 +4,8 @@ const authController = require('../controller/authController');
 
 const validation = require('../middleware/authveriftoken');
 
+const Upload = require('../middleware/upload');
+
 
 const router = express.Router();
 

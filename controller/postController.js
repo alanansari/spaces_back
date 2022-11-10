@@ -30,7 +30,7 @@ const newpost = async (req,res) => {
         let filepath = null;
 
         if(req.file !== undefined){
-            filepath = 'uploads/posts/' + req.file.filename;
+            filepath = 'uploads/' + req.file.filename;
         }
 
 

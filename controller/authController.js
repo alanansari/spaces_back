@@ -406,7 +406,7 @@ const imageupdate=async (req,res)=>{
     let filepath = null;
 
     if(req.file !== undefined){
-        filepath = 'uploads/profile/' + req.file.filename;
+        filepath = 'uploads/' + req.file.filename;
     }
     const user = await User.updateOne({_id:req.user._id},{
       displaypic:filepath   
