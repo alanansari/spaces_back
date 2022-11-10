@@ -8,11 +8,14 @@ const router = express.Router();
 // post comment on a post
 router.post('/comment',validation.authverifytoken,commentController.comment);
 
+router.get('/:id/comments/:num',commentController.getpostcomm);
+
+// see replies on a comment
+router.get('/:id/:num',commentController.replies);
+
 // post reply on a comment
 router.post('/:id',validation.authverifytoken,commentController.reply);
 
-// see replies on a comment
-router.get('/:id',commentController.replies);
 
 //comment id
 router.put('/cupvote',commentController.cupvote);

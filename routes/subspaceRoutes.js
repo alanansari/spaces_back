@@ -8,7 +8,11 @@ const router = express.Router();
 
 router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('image'),subspaceController.newsubspace);
 
-router.get('/:subspace',validation.authverifytoken,subspaceController.viewsubspace);
+router.get('/:subspace',subspaceController.viewsubspace);
+
+router.post('/search',subspaceController.search);
+
+router.post('/:subspace',subspaceController.viewmoresubspace);
 
 router.get('/viewmore/:subspace',validation.authverifytoken,subspaceController.viewsubspace);
 

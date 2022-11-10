@@ -19,6 +19,7 @@ const postform = async(req,res)=>{
         return res.status(200).json(user.mysubspaces);
     } catch (err) {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
 
@@ -51,22 +52,23 @@ const newpost = async (req,res) => {
             createdAt: Date.now(),
             votes:0
         });
-        console.log(post);
-        const addinsubspace=await subSpace.updateOne({name:subspace},{
-            $push:{
-                posts:post._id
-            }
-        })
-        const addinuser=await User.updateOne({user_name:req.user.user_name},{
-            $push:{
-                myposts:post._id
-            }
-        })
+
+        // const addinsubspace=await subSpace.updateOne({name:subspace},{
+        //     $push:{
+        //         posts:post._id
+        //     }
+        // });
+        // const addinuser=await User.updateOne({user_name:req.user.user_name},{
+        //     $push:{
+        //         mysubspaces:subspace
+        //     }
+        // });
     
         return res.status(200).json({success:true,msg:'Posted!'});
 
     } catch (err) {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
 
@@ -74,7 +76,7 @@ const getpost = async (req,res) => {
     try{
         const postId = req.params.id;
         
-        const post = await Post.findById(postId).populate('comments').limit(10);
+        const post = await Post.findById(postId);
 
         if(!post){
             return res.status(404).json({success:false,msg:'Post not found.'});
@@ -84,8 +86,10 @@ const getpost = async (req,res) => {
 
     } catch(err) {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
+
 
 const getfeed = async (req,res) => {
     try {
@@ -94,6 +98,7 @@ const getfeed = async (req,res) => {
         return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
 
@@ -115,6 +120,7 @@ const getlogfeed = async (req,res) => {
         return res.status(200).json({user_name,mysubspaces,topcomm,posts});
     } catch (err) {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
 
@@ -125,6 +131,7 @@ const getmoreposts = async (req,res) => {
         return res.status(200).json(posts);
     } catch (err) {
         console.log(err);
+        return res.status(400).json(err);
     }
 }
 
@@ -138,16 +145,15 @@ const upvote=async (req,res)=>{
        })
        if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
        else {
-
-
-      const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { upvotes:req.body._id} })
-      if(!user) return res.status(404).json({success:false,msg:'User not found.'})
-       return res.status(200).json({success:true,msg:result})
+        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { upvotes:req.body._id} })
+        if(!user) return res.status(404).json({success:false,msg:'User not found.'})
+        return res.status(200).json({success:true,msg:result})
     }
 }
     catch(err)
 {
     console.log(err);
+    return res.status(400).json(err);
 }
 }
 
@@ -159,17 +165,14 @@ const unupvote=async (req,res)=>{
             votes:-1
            }
        })
-       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-       else {
-       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._id} })
-     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     return res.status(200).json({success:true,msg:result})
-       }
-}
-catch(err)
-{
-    console.log(err);
-}
+       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._id} });
+     if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+     else res.status(200).json({success:true,msg:result});
+    }catch(err)
+    {
+        console.log(err);
+        return res.status(400).json(err);
+    }
 }
 const downvote=async (req,res)=>{
     try{
@@ -189,6 +192,7 @@ const downvote=async (req,res)=>{
 catch(err)
 {
     console.log(err);
+    return res.status(400).json(err);
 }
 }
         
@@ -210,6 +214,7 @@ const undownvote=async (req,res)=>{
 catch(err)
 {
     console.log(err);
+    return res.status(400).json(err);
 }
 }
 
