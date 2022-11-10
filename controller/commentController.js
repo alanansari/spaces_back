@@ -68,18 +68,19 @@ const replies = async (req,res) => {
         const commId = req.params.id;
         const num = Number(req.params.num);
 
-        const comment = await Comment.findById(commId).populate('childId').limit(10);
+        const comment = await Comment.findById(commId).populate('childId');
 
         if(!comment)
             return res.status(404).json({success:false,msg:'Comment not found.'});
 
         let comments = comment.childId;
-        comments.sort({votes:-1}).sort({createdAt:-1});
+        //comments.sort({votes:-1}).sort({createdAt:-1});
         comments = comments.slice(num*10,num+10);
 
         return res.status(200).json({comments});
         
     } catch (err) {
+        console.log(err);
         return res.status(400).json({success:false,msg:`${err}`});
     }
 }
