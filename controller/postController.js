@@ -59,8 +59,7 @@ const newpost = async (req,res) => {
         })
         const addinuser=await User.updateOne({user_name:req.user.user_name},{
             $push:{
-                myposts:post._id,
-                mysubspaces:subspace
+                myposts:post._id
             }
         })
     

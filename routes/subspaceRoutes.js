@@ -16,6 +16,11 @@ router.put('/follow',validation.authverifytoken,subspaceController.follow);
 
 router.put('/unfollow',validation.authverifytoken,subspaceController.unfollow);
 
+router.get('/topcommunities',subspaceController.topcommunities);
+
+router.post('/topcommunities',subspaceController.moretopcommunities);
+
+
 
 
 module.exports = router;

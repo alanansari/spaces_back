@@ -9,7 +9,11 @@ const subspaceSchema = new mongoose.Schema({
     imgpath:{type:String},
     posts: [{type:ObjectId,ref:"posts"}],
     members: [{type: ObjectId,ref:"user"}],
-    createdAt: {type: Number}
+    createdAt: {type: Number},
+    followers:
+    {
+        type:Number
+    }
 });
 
 
