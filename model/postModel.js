@@ -30,6 +30,9 @@ const postSchema = new mongoose.Schema({
     }],
     createdAt: {
         type: Number
+    },
+    followers:{
+        type:Number
     }
 });
 

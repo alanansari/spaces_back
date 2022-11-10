@@ -8,13 +8,7 @@ const router = express.Router();
 
 router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('image'),subspaceController.newsubspace);
 
-router.get('/:subspace',subspaceController.viewsubspace);
-
 router.post('/search',subspaceController.search);
-
-router.post('/:subspace',subspaceController.viewmoresubspace);
-
-router.get('/viewmore/:subspace',validation.authverifytoken,subspaceController.viewsubspace);
 
 router.put('/follow',validation.authverifytoken,subspaceController.follow);
 
@@ -24,6 +18,9 @@ router.get('/topcommunities',subspaceController.topcommunities);
 
 router.post('/topcommunities',subspaceController.moretopcommunities);
 
+router.post('/:subspace',subspaceController.viewmoresubspace);
+
+router.get('/:subspace',subspaceController.viewsubspace);
 
 
 

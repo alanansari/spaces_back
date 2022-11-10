@@ -106,10 +106,14 @@ const viewmoresubspace = async (req,res) => {
 const follow= async (req,res)=>{
     try{
 
-        const subspace = req.body.subspace;
+        const {subspace} = req.body;
 
         const result=await subSpace.findOneAndUpdate({name:subspace},
-        {$push:{members:req.user._id}},
+        {$push:{members:req.user._id},
+         $inc:{
+            followers:1
+         }
+        },
         {new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
@@ -119,14 +123,6 @@ const follow= async (req,res)=>{
     } catch (err){
         return res.status(400).json({success:false,msg:`${err}`});
     }
-    console.log(req.user._id)
-    const result=await subspace.findByIdAndUpdate(req.body._Id,
-        {   $push:{members:req.user._id},
-            $inc:{followers:1}    
-    },
-            {new:true})
-        if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-        else res.status(200).json({success:true,msg:result})
 }
 
 const unfollow= async (req,res)=>{
@@ -135,8 +131,9 @@ const unfollow= async (req,res)=>{
 
         const result=await subSpace.findOneAndUpdate({name:subspace},
         {$pull:{members:req.user._id},
-        $inc:{followers:-1} 
-    },
+        $inc:{
+            followers:-1
+         }},
         {new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
