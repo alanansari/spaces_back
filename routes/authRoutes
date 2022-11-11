@@ -4,6 +4,8 @@ const authController = require('../controller/authController');
 
 const validation = require('../middleware/authveriftoken');
 
+const Upload = require('../middleware/upload');
+
 
 const router = express.Router();
 
@@ -26,6 +28,8 @@ router.post('/updatename',validation.authverifytoken,authController.updatename);
 router.post('/emailupdate',validation.authverifytoken,authController.emailupdate);
 
 router.post('/emailupdateotp',validation.authverifytoken,authController.emailupdateotp);
+
+router.post('/profilephoto',validation.authverifytoken,Upload.uploadImg.single('image'),authController.imageupdate);
 
 
 

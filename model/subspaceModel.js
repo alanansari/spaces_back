@@ -27,6 +27,9 @@ const subspaceSchema = new mongoose.Schema({
     }],
     createdAt: {
         type: Number
+    },
+    followers:{
+        tupe:Number
     }
 });
 

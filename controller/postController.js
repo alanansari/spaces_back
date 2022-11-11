@@ -52,17 +52,6 @@ const newpost = async (req,res) => {
             createdAt: Date.now(),
             votes:0
         });
-
-        // const addinsubspace=await subSpace.updateOne({name:subspace},{
-        //     $push:{
-        //         posts:post._id
-        //     }
-        // });
-        // const addinuser=await User.updateOne({user_name:req.user.user_name},{
-        //     $push:{
-        //         mysubspaces:subspace
-        //     }
-        // });
     
         return res.status(200).json({success:true,msg:'Posted!'});
 

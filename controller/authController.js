@@ -393,6 +393,26 @@ const emailupdateotp=async (req,res)=>{
   }
 }
 
+const imageupdate=async (req,res)=>{
+  try{
+    let filepath = null;
+
+    if(req.file !== undefined){
+        filepath = 'uploads/' + req.file.filename;
+    }
+    const user = await User.updateOne({_id:req.user._id},{
+      displaypic:filepath   
+  });
+  return res.status(200).json({success:true,msg:'Profile Pic Added'});
+
+  }
+  catch(err)
+  {
+    console.log(err);
+    return res.status(400).json(err);
+  }
+}
+
 
 module.exports = {
     signup,
@@ -404,5 +424,6 @@ module.exports = {
     fverify,
     emailupdate,
     emailupdateotp,
-    updatename
+    updatename,
+    imageupdate
 }
