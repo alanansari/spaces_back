@@ -4,6 +4,8 @@ const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
 const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
 
 const postform = async(req,res)=>{
     try {
@@ -52,17 +54,6 @@ const newpost = async (req,res) => {
             createdAt: Date.now(),
             votes:0
         });
-
-        // const addinsubspace=await subSpace.updateOne({name:subspace},{
-        //     $push:{
-        //         posts:post._id
-        //     }
-        // });
-        // const addinuser=await User.updateOne({user_name:req.user.user_name},{
-        //     $push:{
-        //         mysubspaces:subspace
-        //     }
-        // });
     
         return res.status(200).json({success:true,msg:'Posted!'});
 
@@ -221,6 +212,22 @@ catch(err)
 const dltpost=async (req,res)=>{
     try{
         const id =req.params.id;
+        const posts=await Post.findOne({_id:id});
+        const oldPhoto=posts.imgpath;
+        console.log(oldPhoto);
+        if (oldPhoto) {
+            const oldPath = path.join(__dirname, "..", "uploads", oldPhoto);
+            console.log(oldPath)
+            if (fs.existsSync(oldPath)) {
+              fs.unlink(oldPath, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+                res.status(200).send({msg:"kj,ksbdf"});
+              });
+            }
+          }
         const post=await Post.deleteOne({_id:id});
         if(post)
         {
