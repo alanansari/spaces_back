@@ -4,7 +4,6 @@ const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
 const mongoose = require('mongoose');
-const path = require('path');
 const fs = require('fs');
 
 const postform = async(req,res)=>{
@@ -103,12 +102,33 @@ const getlogfeed = async (req,res) => {
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
         const mysubspaces = user.mysubspaces;
+        const imgpath = user.displaypic;
 
         const topcomm = await subSpace.find().sort({members:-1}).limit(5);
 
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
 
-        return res.status(200).json({user_name,mysubspaces,topcomm,posts});
+        const upvoted = [];
+
+        // posts.forEach(obj=>{
+        //     const voted = User.find(user_name,{upvotes:{$in: [obj._id]}}).count();
+        //     if(voted>0)
+        //         check.push(true);
+        //     else
+        //         check.push(false);
+        // });
+        
+        for(let i=0;i<posts.length;i++){
+            let bool = false;
+            for(let j=0;j<user.upvotes.length;j++){
+                if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                    bool = true;
+                }
+            }
+            upvoted.push(bool);
+        }
+
+        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -129,23 +149,24 @@ const getmoreposts = async (req,res) => {
 const upvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Post.updateOne({_id},{
-           $inc:{
-            votes:1
-           }
-       })
-       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+        const result =  await Post.updateOne({_id},{
+            $inc:{
+                votes:1
+            }
+        });
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
        else {
-        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { upvotes:req.body._id} })
-        if(!user) return res.status(404).json({success:false,msg:'User not found.'})
-        return res.status(200).json({success:true,msg:result})
+            const user= await User.findOneAndUpdate({ _id:req.user._id }, { 
+                $push: { upvotes:req.body._Id},
+                $pull: { downvotes:req.body._Id}
+            });
+            if(!user) return res.status(404).json({success:false,msg:'User not found.'});
+            return res.status(200).json({success:true,msg:"Upvoted comment."});
+        }
+    }   catch(err) {
+        console.log(err);
+        return res.status(400).json(err);
     }
-}
-    catch(err)
-{
-    console.log(err);
-    return res.status(400).json(err);
-}
 }
 
 const unupvote=async (req,res)=>{
@@ -156,7 +177,7 @@ const unupvote=async (req,res)=>{
             votes:-1
            }
        })
-       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._id} });
+       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._Id} });
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
      else res.status(200).json({success:true,msg:result});
     }catch(err)
@@ -168,23 +189,25 @@ const unupvote=async (req,res)=>{
 const downvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Post.updateOne({_id},{
-           inc:{
-            votes:-1
-           }
-       })
-       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
-       else {
-       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { downvotes:req.body._id} })
-     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     return res.status(200).json({success:true,msg:result})
-}
+        const result =  await Post.updateOne({_id},{
+            $inc:{
+                votes:-1
+            }
+        });
+        if(!result.acknowledged){ 
+            return res.status(404).json({success:false,msg:'Post not found.'});
+        } else {
+            const user= await User.findOneAndUpdate({ _id:req.user._id }, {
+                    $push: {downvotes:_id},
+                    $pull: { upvotes:_id}
+                });
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+            return res.status(200).json({success:true,msg:result});
+        }
+    }  catch(err) {
+        console.log(err);
+        return res.status(400).json(err);
     }
-catch(err)
-{
-    console.log(err);
-    return res.status(400).json(err);
-}
 }
         
 const undownvote=async (req,res)=>{
@@ -194,45 +217,41 @@ const undownvote=async (req,res)=>{
            $inc:{
             votes:1
            }
-       })
-       if(!result) return res.status(404).json({success:false,msg:'Post not found.'})
+       });
+       if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
        else {
-       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { downvotes:req.body._id} })
-     if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-     return res.status(200).json({success:true,msg:result})
-}
+       const user= await User.findOneAndUpdate({ _id:req.user._id }, {
+            $pull: { downvotes:req.body._Id} 
+        });
+        if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+        return res.status(200).json({success:true,msg:result});
+        }
+    } catch(err) {
+        console.log(err);
+        return res.status(400).json(err);
     }
-catch(err)
-{
-    console.log(err);
-    return res.status(400).json(err);
-}
 }
 
 const dltpost=async (req,res)=>{
     try{
-        const id =req.params.id;
-        const posts=await Post.findOne({_id:id});
-        const oldPhoto=posts.imgpath;
-        console.log(oldPhoto);
-        if (oldPhoto) {
-            const oldPath = path.join(__dirname, "..", "uploads", oldPhoto);
-            console.log(oldPath)
-            if (fs.existsSync(oldPath)) {
-              fs.unlink(oldPath, (err) => {
-                if (err) {
-                  console.error(err);
-                  return;
-                }
-                res.status(200).send({msg:"kj,ksbdf"});
-              });
-            }
-          }
-        const post=await Post.deleteOne({_id:id});
-        if(post)
-        {
-            return res.status(200).json({success:true,msg:"Post deleted"})
+        const _id = req.params.id;
+        let post = await Post.findById(_id);
+        if(!post){
+            return res.status(404).json({success:true,msg:"Post to be deleted not found"});
         }
+        if(req.user.user_name!==post.author){
+            return res.status(400).json({success:false,msg:"You are not the creator of this post."});
+        }
+        if(post.imgpath!=null){
+            fs.unlinkSync('./'+post.imgpath);
+        }
+        post=await Post.deleteOne({_id});
+        if(!post){
+            return res.status(404).json({success:true,msg:"Post to be deleted not found"});
+        }
+        
+        return res.status(200).json({success:true,msg:"Post deleted"});
+    
     }
     catch(err)
     {
