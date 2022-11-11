@@ -84,7 +84,13 @@ const viewsubspace = async (req,res) => {
         if(!subspace)
             return res.status(404).json({success:false,msg:"Subspace not found"});
 
+        const upvoted = [],downvoted=[];
+        let following = false;
+        let imgpath = null;
+            
         let token=req.headers['accesstoken'] || req.headers['authorization'];
+
+        const posts = await Post.find({subspace:name}).sort({createdAt:-1}).limit(10);
 
         if(token){
             token = token.replace(/^Bearer\s+/, "");
@@ -92,10 +98,38 @@ const viewsubspace = async (req,res) => {
             const decode=await jwt.decode(token,"jwtsecret");
             user_name=decode.user_name;
             user = await User.findOne({user_name});
+
+            imgpath = user.displaypic;
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.upvotes.length;j++){
+                    if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                upvoted.push(bool);
+            }
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.downvotes.length;j++){
+                    if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                downvoted.push(bool);
+            }
+
+            for(let i=0;i<user.mysubspaces.length;i++){
+                if(user.mysubspaces[i]===subspace.name){
+                    following = true;
+                    break;
+                }
+            }
         }
-        const imgpath = user.displaypic;
-        const posts = await Post.find({subspace:name}).limit(10);
-        return res.status(200).json({user_name,imgpath,subspace,posts});
+        
+        return res.status(200).json({user_name,following,imgpath,subspace,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -107,8 +141,43 @@ const viewmoresubspace = async (req,res) => {
         const name = req.params.subspace;
         const {num} = req.body;
         const subspace = await subSpace.findOne({name});
-        const posts = await Post.find({subspace:name}).skip(10*num).limit(10);
-        return res.status(200).json({subspace,posts});
+        const posts = await Post.find({subspace:name}).sort({createdAt:-1}).skip(10*num).limit(10);
+
+        const upvoted = [],downvoted=[];
+
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+
+        if(token){
+
+            token = token.replace(/^Bearer\s+/, "");
+
+            const decode=await jwt.decode(token,"jwtsecret");
+            const user_name=decode.user_name;
+            const user = await User.findOne({user_name});
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.upvotes.length;j++){
+                    if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                upvoted.push(bool);
+            }
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.downvotes.length;j++){
+                    if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                downvoted.push(bool);
+            }
+            
+        }
+
+        return res.status(200).json({subspace,posts,upvoted,downvoted});
     } catch (err) {
         
         console.log(err);
@@ -160,7 +229,7 @@ const unfollow= async (req,res)=>{
 
 const topcommunities=async (req,res)=>{
     try{
-     const top=await subSpace.find().sort({"followers":1}).limit(10);
+     const top=await subSpace.find().sort({"followers":-1}).limit(10);
 
 
         return res.status(200).json({top});
@@ -173,7 +242,7 @@ const topcommunities=async (req,res)=>{
 const moretopcommunities=async (req,res)=>{
     try{
         const {num}=req.body;
-     const top=await subSpace.find().sort({"followers":1}).skip(10*num).limit(10);
+     const top=await subSpace.find().sort({"followers":-1}).skip(10*num).limit(10);
 
 
         return res.status(200).json({top});
