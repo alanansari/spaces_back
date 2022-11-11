@@ -41,6 +41,14 @@ const userSchema = new mongoose.Schema({
     downvotes:[{
       type:ObjectId,
       ref:"posts"
+    }],
+    cupvotes:[{
+      type:ObjectId,
+      ref:"comments"
+    }],
+    cdownvotes:[{
+      type:ObjectId,
+      ref:"comments"
     }]
   });
 
