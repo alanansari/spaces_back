@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
-const mongoose = require('mongoose');
 const fs = require('fs');
 
 const postform = async(req,res)=>{
@@ -106,18 +105,10 @@ const getlogfeed = async (req,res) => {
 
         const topcomm = await subSpace.find().sort({members:-1}).limit(5);
 
-        const posts = await Post.find().sort({createdAt:-1}).limit(10);
+        const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(20);
 
-        const upvoted = [];
+        const upvoted = [],downvoted=[];
 
-        // posts.forEach(obj=>{
-        //     const voted = User.find(user_name,{upvotes:{$in: [obj._id]}}).count();
-        //     if(voted>0)
-        //         check.push(true);
-        //     else
-        //         check.push(false);
-        // });
-        
         for(let i=0;i<posts.length;i++){
             let bool = false;
             for(let j=0;j<user.upvotes.length;j++){
@@ -127,8 +118,18 @@ const getlogfeed = async (req,res) => {
             }
             upvoted.push(bool);
         }
+        
+        for(let i=0;i<posts.length;i++){
+            let bool = false;
+            for(let j=0;j<user.downvotes.length;j++){
+                if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                    bool = true;
+                }
+            }
+            downvoted.push(bool);
+        }
 
-        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted});
+        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -139,7 +140,42 @@ const getmoreposts = async (req,res) => {
     try {
         const {num} = req.body;
         const posts = await Post.find().sort({createdAt:-1}).skip(10*num).limit(10);
-        return res.status(200).json(posts);
+
+        const upvoted = [],downvoted=[];
+
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        
+        if(token){
+
+            token = token.replace(/^Bearer\s+/, "");
+
+            const decode=await jwt.decode(token,"jwtsecret");
+            const user_name=decode.user_name;
+            const user = await User.findOne({user_name});
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.upvotes.length;j++){
+                    if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                upvoted.push(bool);
+            }
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.downvotes.length;j++){
+                    if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                downvoted.push(bool);
+            }
+
+        }
+
+        return res.status(200).json(posts,upvoted,downvoted);
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -157,7 +193,7 @@ const upvote=async (req,res)=>{
        if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
        else {
             const user= await User.findOneAndUpdate({ _id:req.user._id }, { 
-                $push: { upvotes:req.body._Id},
+                $addToSet: { upvotes:req.body._Id},
                 $pull: { downvotes:req.body._Id}
             });
             if(!user) return res.status(404).json({success:false,msg:'User not found.'});
@@ -198,7 +234,7 @@ const downvote=async (req,res)=>{
             return res.status(404).json({success:false,msg:'Post not found.'});
         } else {
             const user= await User.findOneAndUpdate({ _id:req.user._id }, {
-                    $push: {downvotes:_id},
+                    $addToSet: {downvotes:_id},
                     $pull: { upvotes:_id}
                 });
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'});

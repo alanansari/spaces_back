@@ -288,14 +288,6 @@ const resendotp=async (req,res)=>{
   }
 }
 
-const editpage = async(req,res)=>{
-  try {
-    
-  } catch (err) {
-    
-  }
-}
-
 
 const updatename=async (req,res)=>{
   try{
@@ -433,6 +425,5 @@ module.exports = {
     emailupdate,
     emailupdateotp,
     updatename,
-    editpage,
     imageupdate
 }

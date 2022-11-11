@@ -18,11 +18,10 @@ router.post('/:id',validation.authverifytoken,commentController.reply);
 
 
 //comment id
-router.put('/cupvote',commentController.cupvote);
-
-router.put('/cunupvote',commentController.cunupvote);
-router.put('/cdownvote',commentController.cdownvote);
-router.put('/cundownvote',commentController.cundownvote);
+router.put('/cupvote',validation.authverifytoken,commentController.cupvote);
+router.put('/cunupvote',validation.authverifytoken,commentController.cunupvote);
+router.put('/cdownvote',validation.authverifytoken,commentController.cdownvote);
+router.put('/cundownvote',validation.authverifytoken,commentController.cundownvote);
 
 
 
