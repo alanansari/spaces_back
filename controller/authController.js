@@ -25,9 +25,7 @@ const signup = async (req,res)=>{
         const oldMail = await User.findOne({ email:email.toLowerCase() });
 
         if (oldMail&&oldMail.email_verify==true&&oldMail.email_verify==true) {
-            return res.status(409)
-              
-              .json({sucess:false,msg:"User with this Email ID Already Exists."});
+            return res.status(409).json({sucess:false,msg:"User with this Email ID Already Exists."});
         }
         // check if username already exist
         const oldUser = await User.findOne({ user_name });
@@ -95,13 +93,13 @@ const login = async (req, res) => {
       }
       const user = await User.findOne({ email:email.toLowerCase() });
 
-        if (!user||user.email_verify == false) return res.status(409)
-            .json({sucess:false,msg:"This email doesn't have an account"});
+        if (!user||user.email_verify == false) 
+        return res.status(400).json({sucess:false,msg:"This email doesn't have an account"});
 
 
         const result = await bcrypt.compare(password, user.password);
 
-        if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
+        if (!result) return res.status(401).json({sucess:false,msg:"Wrong Password"});
 
         const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
       const updated=await User.updateOne({email},{
@@ -126,11 +124,12 @@ const forgotpassword=async (req,res)=>{
 
     const user =await User.findOne({email:email.toLowerCase()});
 
-    if (!user||user.email_verify==false) return res.status(409)
-      .json({sucess:false,msg:"This email doesn't have an account"});
+    if (!user||user.email_verify==false) 
+    return res.status(404).json({sucess:false,msg:"This email doesn't have an account"});
 
     sendotp(email);
 
+    
     let mailedOTP2;
 
 
@@ -173,10 +172,9 @@ const changepassword=async (req,res)=>{
     //   return res.status(400).send("Incorrect Password Format.");
     // }
     
-    const user_name=req.user.user_name;
-    const user = await User.findOne({user_name});
+    const user =req.user;
 
-    if (!user) return res.status(409).json({sucess:false,msg:"This email doesn't have an account"});
+    if (!user) return res.status(404).json({sucess:false,msg:"This email doesn't have an account"});
 
     
       const encpassword=await bcrypt.hash(newpassword,12)
@@ -203,7 +201,8 @@ const fverify = async (req,res) => {
     }
     const user = await User.findOne({email});
 
-    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
+    if(!user) 
+    return res.status(404).json({success:false,msg:'user not found by the given mail'});
     const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
@@ -214,10 +213,10 @@ const fverify = async (req,res) => {
       });
       return res.status(200).json({success:true,msg:'OTP Verified!',token:token});
     }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
-      return res.status(400).json({success:false,msg:'This OTP has expired'});
+      return res.status(410).json({success:false,msg:'This OTP has expired'});
     }
     else{
-      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+      return res.status(401).json({success:false,msg:'Wrong OTP entered.'});
     }
      
   }catch(err){
@@ -233,7 +232,8 @@ const sverify = async (req,res) => {
     }
     const user = await User.findOne({email});
 
-    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
+    if(!user)
+     return res.status(404).json({success:false,msg:'user not found by the given mail'});
     const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"});
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
@@ -245,10 +245,10 @@ const sverify = async (req,res) => {
       });
       return res.status(200).json({success:true,msg:'OTP Verified!',token:token});
     }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
-      return res.status(400).json({success:false,msg:'This OTP has expired'});
+      return res.status(410).json({success:false,msg:'This OTP has expired'});
     }
     else{
-      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+      return res.status(401).json({success:false,msg:'Wrong OTP entered.'});
     }
      
   }catch(err){
@@ -284,17 +284,10 @@ const resendotp=async (req,res)=>{
 }
   catch(error){
     console.log(error); 
-    return res.status(400).json({sucess: false,msg:'OTP not sent'});
+    return res.status(410).json({sucess: false,msg:'OTP not sent'});
   }
 }
 
-const editpage = async(req,res)=>{
-  try {
-    
-  } catch (err) {
-    
-  }
-}
 
 
 const updatename=async (req,res)=>{
@@ -311,11 +304,11 @@ const updatename=async (req,res)=>{
     const user_namecheck=await User.findOne({user_name});
     if(user_namecheck)
     {
-      return res.status(400).json({sucess: false,msg:'Username already exists'});
+      return res.status(409).json({sucess: false,msg:'Username already exists'});
     }
     const result = await bcrypt.compare(password, req.user.password);
 
-    if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
+    if (!result) return res.status(401).json({sucess:false,msg:"Wrong Password"});
 
     const token=jwt.sign({user_name:user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
 
@@ -326,7 +319,7 @@ const updatename=async (req,res)=>{
       }
     })
    if(user)     
-  return res.status(200).json({success:true,msg:'Username changed',token:token});
+  return res.status(204).json({success:true,msg:'Username changed',token:token});
    }
   catch(err)
   {
@@ -343,7 +336,7 @@ const emailupdate=async (req,res)=>{
   const emailcheck=await User.findOne({email});
   if(emailcheck)
   {
-    return res.status(400).json({sucess: false,msg:'This email already has an account'}); 
+    return res.status(409).json({sucess: false,msg:'This email already has an account'}); 
   }
   sendotp(email);
   let mailedOTP2;
@@ -389,10 +382,10 @@ const emailupdateotp=async (req,res)=>{
       });
       return res.status(200).json({success:true,msg:'OTP Verified!'});
     }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
-      return res.status(400).json({success:false,msg:'This OTP has expired'});
+      return res.status(410).json({success:false,msg:'This OTP has expired'});
     }
     else{
-      return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
+      return res.status(401).json({success:false,msg:'Wrong OTP entered.'});
     }
   }
   catch(err)
@@ -411,7 +404,7 @@ const imageupdate=async (req,res)=>{
     const user = await User.updateOne({_id:req.user._id},{
       displaypic:filepath   
   });
-  return res.status(200).json({success:true,msg:'Profile Pic Added'});
+  return res.status(204).json({success:true,msg:'Profile Pic Added'});
 
   }
   catch(err)
@@ -433,6 +426,5 @@ module.exports = {
     emailupdate,
     emailupdateotp,
     updatename,
-    editpage,
     imageupdate
 }

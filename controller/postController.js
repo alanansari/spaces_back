@@ -8,16 +8,8 @@ const fs = require('fs');
 
 const postform = async(req,res)=>{
     try {
-        let token=req.headers['accesstoken'] || req.headers['authorization'];
-        token = token.replace(/^Bearer\s+/, "");
-
-        const decode = await jwt.decode(token,"jwtsecret");
-        const user_name=decode.user_name;
-        const user = await User.findOne({user_name});
-
-        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
-
-        return res.status(200).json(user.mysubspaces);
+    const user =req.user;
+    return res.status(200).json(user.mysubspaces);
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -34,15 +26,9 @@ const newpost = async (req,res) => {
             filepath = 'uploads/' + req.file.filename;
         }
 
+        const user = req.user;
 
-        let token=req.headers['accesstoken'] || req.headers['authorization'];
-        token = token.replace(/^Bearer\s+/, "");
-
-        const decode=await jwt.decode(token,"jwtsecret");
-        const user_name=decode.user_name;
-        const user = await User.findOne({user_name});
-
-        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+        if (!user) return res.status(404).json({sucess:false,msg:"This username doesn't have an account"});
 
         const post = await Post.create({
             author:user_name,
@@ -95,12 +81,7 @@ const getfeed = async (req,res) => {
 const getlogfeed = async (req,res) => {
     try {
 
-        let token=req.headers['accesstoken'] || req.headers['authorization'];
-        token = token.replace(/^Bearer\s+/, "");
-
-        const decode=await jwt.decode(token,"jwtsecret");
-        const user_name=decode.user_name;
-        const user = await User.findOne({user_name});
+        const user = req.user;
         const mysubspaces = user.mysubspaces;
         const imgpath = user.displaypic;
 
@@ -109,14 +90,6 @@ const getlogfeed = async (req,res) => {
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
 
         const upvoted = [];
-
-        // posts.forEach(obj=>{
-        //     const voted = User.find(user_name,{upvotes:{$in: [obj._id]}}).count();
-        //     if(voted>0)
-        //         check.push(true);
-        //     else
-        //         check.push(false);
-        // });
         
         for(let i=0;i<posts.length;i++){
             let bool = false;
@@ -161,7 +134,7 @@ const upvote=async (req,res)=>{
                 $pull: { downvotes:req.body._Id}
             });
             if(!user) return res.status(404).json({success:false,msg:'User not found.'});
-            return res.status(200).json({success:true,msg:"Upvoted comment."});
+            return res.status(204).json({success:true,msg:"Upvoted comment."});
         }
     }   catch(err) {
         console.log(err);
@@ -179,7 +152,7 @@ const unupvote=async (req,res)=>{
        })
        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._Id} });
      if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-     else res.status(200).json({success:true,msg:result});
+     else res.status(204).json({success:true,msg:result});
     }catch(err)
     {
         console.log(err);
@@ -202,7 +175,7 @@ const downvote=async (req,res)=>{
                     $pull: { upvotes:_id}
                 });
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-            return res.status(200).json({success:true,msg:result});
+            return res.status(204).json({success:true,msg:result});
         }
     }  catch(err) {
         console.log(err);
@@ -224,7 +197,7 @@ const undownvote=async (req,res)=>{
             $pull: { downvotes:req.body._Id} 
         });
         if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-        return res.status(200).json({success:true,msg:result});
+        return res.status(204).json({success:true,msg:result});
         }
     } catch(err) {
         console.log(err);
@@ -240,7 +213,7 @@ const dltpost=async (req,res)=>{
             return res.status(404).json({success:true,msg:"Post to be deleted not found"});
         }
         if(req.user.user_name!==post.author){
-            return res.status(400).json({success:false,msg:"You are not the creator of this post."});
+            return res.status(401).json({success:false,msg:"You are not the creator of this post."});
         }
         if(post.imgpath!=null){
             fs.unlinkSync('./'+post.imgpath);

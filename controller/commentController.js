@@ -15,14 +15,10 @@ const comment = async(req,res)=>{
 
         if(!text) return res.status(400).json({success:true,msg:'Give comment content'});
 
-        let token=req.headers['accesstoken'] || req.headers['authorization'];
-        token = token.replace(/^Bearer\s+/, "");
 
-        const decode = await jwt.decode(token,"jwtsecret");
-        const user_name=decode.user_name;
-        const user = await User.findOne({user_name});
+        const user = req.user;
 
-        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+        if (!user) return res.status(404).json({sucess:false,msg:"This username doesn't have an account"});
 
         const comment = await Comment.create({
             author: user_name,
@@ -93,14 +89,9 @@ const reply = async (req,res) => {
 
         if(!text) return res.status(400).json({success:true,msg:'Give comment content'});
 
-        let token=req.headers['accesstoken'] || req.headers['authorization'];
-        token = token.replace(/^Bearer\s+/, "");
+        const user = req.user;
 
-        const decode = await jwt.decode(token,"jwtsecret");
-        const user_name=decode.user_name;
-        const user = await User.findOne({user_name});
-
-        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+        if (!user) return res.status(404).json({sucess:false,msg:"This username doesn't have an account"});
 
         const comment = await Comment.create({
             author: user_name,
@@ -130,7 +121,7 @@ const cupvote=async (req,res)=>{
        else {
         const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:req.body._id} })
       if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(200).json({success:true,msg:result})
+      return res.status(204).json({success:true,msg:result})
  }
      }
     catch(err)
@@ -151,7 +142,7 @@ const cunupvote=async (req,res)=>{
        else {
         const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:req.body._id} })
       if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(200).json({success:true,msg:result})
+      return res.status(204).json({success:true,msg:result})
  }
      }
     catch(err)
@@ -171,7 +162,7 @@ const cdownvote=async (req,res)=>{
        else {
         const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { cdownvotes:req.body._id} })
       if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(200).json({success:true,msg:result})
+      return res.status(204).json({success:true,msg:result})
  }
      
 }
@@ -192,7 +183,7 @@ const cundownvote=async (req,res)=>{
        else {
         const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cdownvotes:req.body._id} })
       if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(200).json({success:true,msg:result})
+      return res.status(204).json({success:true,msg:result})
  }
      
 }

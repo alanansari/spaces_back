@@ -14,21 +14,11 @@ const newsubspace = async (req,res) => {
             return res.status(400).json({success:false,msg:'Fill all input fields!'});
         }
 
-
-        let token=req.headers['accesstoken'] || req.headers['authorization'];
-        token = token.replace(/^Bearer\s+/, "");
-
-        const decode=await jwt.decode(token,"jwtsecret");
-        const user_name=decode.user_name;
-        const user = await User.findOne({user_name});
-
-
-        if(!user)
-            return res.status(400).json({success:false,msg:'User not found!'});
+        const user = req.user;
 
         const oldspace = await subSpace.findOne({name});
 
-        if(oldspace) return res.status(400).json({success:false,msg:`${name} is already taken.`});
+        if(oldspace) return res.status(409).json({success:false,msg:`${name} is already taken.`});
 
         let filepath = null;
 
@@ -132,7 +122,7 @@ const follow= async (req,res)=>{
 
         if(!result) return res.status(404).json({success:false,msg:'Subspace not found.'});
 
-        else res.status(200).json({success:true,msg:"followed",});
+        else res.status(204).json({success:true,msg:"followed",});
 
     } catch (err){
         return res.status(400).json({success:false,msg:`${err}`});
@@ -152,7 +142,7 @@ const unfollow= async (req,res)=>{
 
         if(!result) return res.status(404).json({success:false,msg:'Subspace not found.'});
 
-        else res.status(200).json({success:true,msg:"unfollowed"});
+        else res.status(204).json({success:true,msg:"unfollowed"});
     } catch(err){
         return res.status(400).json({success:false,msg:`${err}`});
     }
@@ -191,7 +181,7 @@ const search = async (req,res) => {
             { $match:{name: filter} }
           ]).limit(5);
         
-        if(!docs) return res.status(400).json({msg:'Not able to search.'});
+        if(!docs) return res.status(404).json({msg:'Not able to search.'});
 
         const subs = [];
         docs.forEach(obj=>{
