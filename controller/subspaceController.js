@@ -192,12 +192,14 @@ const follow= async (req,res)=>{
         const {subspace} = req.body;
 
         const result=await subSpace.findOneAndUpdate({name:subspace},
-        {$push:{members:req.user._id},
-         $inc:{
-            followers:1
-         }
-        },
-        {new:true});
+        {
+            $addToSet:{
+                members:req.user._id
+            },
+            $inc:{
+                followers:1
+            }
+        },{new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
 
@@ -212,12 +214,12 @@ const unfollow= async (req,res)=>{
     try{
         const subspace = req.body.subspace;
 
-        const result=await subSpace.findOneAndUpdate({name:subspace},
-        {$pull:{members:req.user._id},
-        $inc:{
-            followers:-1
-         }},
-        {new:true});
+        const result=await subSpace.findOneAndUpdate({name:subspace},{
+            $pull:{members:req.user._id},
+            $inc:{
+                followers:-1
+            }
+        },{new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
 
