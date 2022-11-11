@@ -3,7 +3,8 @@ const User = require('../model/userModel');
 const Post = require('../model/postModel');
 
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+require('dotenv').config();
+const jwtsecret = process.env.jwtsecretkey1;
 
 const newsubspace = async (req,res) => {
 
@@ -18,7 +19,7 @@ const newsubspace = async (req,res) => {
         let token=req.headers['accesstoken'] || req.headers['authorization'];
         token = token.replace(/^Bearer\s+/, "");
 
-        const decode=await jwt.decode(token,"jwtsecret");
+        const decode=await jwt.verify(token,jwtsecret);
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
 
@@ -45,8 +46,7 @@ const newsubspace = async (req,res) => {
             about,
             rules,
             imgpath: filepath,
-            createdAt: Date.now(),
-            followers:1
+            createdAt: Date.now()
         });
 
         const becomemem = await subSpace.findOneAndUpdate({name},{
@@ -95,7 +95,7 @@ const viewsubspace = async (req,res) => {
         if(token){
             token = token.replace(/^Bearer\s+/, "");
 
-            const decode=await jwt.decode(token,"jwtsecret");
+            const decode=await jwt.verify(token,jwtsecret);
             user_name=decode.user_name;
             user = await User.findOne({user_name});
 
@@ -151,7 +151,7 @@ const viewmoresubspace = async (req,res) => {
 
             token = token.replace(/^Bearer\s+/, "");
 
-            const decode=await jwt.decode(token,"jwtsecret");
+            const decode=await jwt.verify(token,jwtsecret);
             const user_name=decode.user_name;
             const user = await User.findOne({user_name});
 
@@ -190,14 +190,16 @@ const follow= async (req,res)=>{
     try{
 
         const {subspace} = req.body;
+        const user_name = req.user.user_name;
 
+        const remsub = await User.findOneAndUpdate({user_name},{
+            $addToSet:{mysubspaces:subspace}
+        });
+    
         const result=await subSpace.findOneAndUpdate({name:subspace},
         {
             $addToSet:{
                 members:req.user._id
-            },
-            $inc:{
-                followers:1
             }
         },{new:true});
 
@@ -212,13 +214,16 @@ const follow= async (req,res)=>{
 
 const unfollow= async (req,res)=>{
     try{
-        const subspace = req.body.subspace;
+        const {subspace} = req.body;
+
+        const user_name = req.user.user_name;
+
+        const remsub = await User.findOneAndUpdate({user_name},{
+            $pull:{mysubspaces:subspace}
+        });
 
         const result=await subSpace.findOneAndUpdate({name:subspace},{
-            $pull:{members:req.user._id},
-            $inc:{
-                followers:-1
-            }
+            $pull:{members:req.user._id}
         },{new:true});
 
         if(!result) return res.status(404).json({success:false,msg:'Subspace not found.'});

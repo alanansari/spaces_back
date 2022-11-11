@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const Comment = require('../model/commentModel');
 const Post = require('../model/postModel');
+require('dotenv').config();
+const jwtsecret = process.env.jwtsecretkey1;
 
 const comment = async(req,res)=>{
     try {
@@ -18,7 +20,7 @@ const comment = async(req,res)=>{
         let token=req.headers['accesstoken'] || req.headers['authorization'];
         token = token.replace(/^Bearer\s+/, "");
 
-        const decode = await jwt.decode(token,"jwtsecret");
+        const decode = await jwt.decode(token,jwtsecret);
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
 
@@ -96,7 +98,7 @@ const reply = async (req,res) => {
         let token=req.headers['accesstoken'] || req.headers['authorization'];
         token = token.replace(/^Bearer\s+/, "");
 
-        const decode = await jwt.decode(token,"jwtsecret");
+        const decode = await jwt.decode(token,jwtsecret);
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
 

@@ -4,13 +4,16 @@ const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
 const fs = require('fs');
+require('dotenv').config();
+const jwtsecret = process.env.jwtsecretkey1;
+
 
 const postform = async(req,res)=>{
     try {
         let token=req.headers['accesstoken'] || req.headers['authorization'];
         token = token.replace(/^Bearer\s+/, "");
 
-        const decode = await jwt.decode(token,"jwtsecret");
+        const decode = await jwt.verify(token,jwtsecret);
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
 
@@ -37,7 +40,7 @@ const newpost = async (req,res) => {
         let token=req.headers['accesstoken'] || req.headers['authorization'];
         token = token.replace(/^Bearer\s+/, "");
 
-        const decode=await jwt.decode(token,"jwtsecret");
+        const decode=await jwt.verify(token,jwtsecret);
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
 
@@ -101,7 +104,7 @@ const getlogfeed = async (req,res) => {
         let token=req.headers['accesstoken'] || req.headers['authorization'];
         token = token.replace(/^Bearer\s+/, "");
 
-        const decode=await jwt.decode(token,"jwtsecret");
+        const decode=await jwt.verify(token,jwtsecret);
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
         const mysubspaces = user.mysubspaces;
@@ -109,7 +112,7 @@ const getlogfeed = async (req,res) => {
 
         let topcomm = await subSpace.aggregate([{$unwind:"$members"},
             { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
-            { $sort :{ members: -1}}]).limit(5).limit(5);
+            { $sort :{ members: -1}}]).limit(5);
 
         const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(20);
 
@@ -155,7 +158,7 @@ const getmoreposts = async (req,res) => {
 
             token = token.replace(/^Bearer\s+/, "");
 
-            const decode=await jwt.decode(token,"jwtsecret");
+            const decode=await jwt.verify(token,jwtsecret);
             const user_name=decode.user_name;
             const user = await User.findOne({user_name});
 
