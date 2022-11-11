@@ -93,8 +93,12 @@ const getpost = async (req,res) => {
 
 const getfeed = async (req,res) => {
     try {
-        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
+        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
+            { $group :{_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
+            { $sort :{ members: -1}}]).limit(5);
+
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
+
         return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
@@ -114,7 +118,9 @@ const getlogfeed = async (req,res) => {
         const mysubspaces = user.mysubspaces;
         const imgpath = user.displaypic;
 
-        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
+        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
+            { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
+            { $sort :{ members: -1}}]).limit(5).limit(5);
 
         const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(20);
 
@@ -138,7 +144,7 @@ const getlogfeed = async (req,res) => {
                 }
             }
             downvoted.push(bool);
-        }
+        }    
 
         return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted,downvoted});
     } catch (err) {
@@ -286,7 +292,12 @@ const dltpost=async (req,res)=>{
         if(!post){
             return res.status(404).json({success:true,msg:"Post to be deleted not found"});
         }
-        if(req.user.user_name!==post.author){
+
+        const subspace = post.subspace;
+        const sub = await subSpace.findOne({subspace});
+
+
+        if(req.user.user_name!==post.author&&req.user.user_name!==sub.admin){
             return res.status(400).json({success:false,msg:"You are not the creator of this post."});
         }
         if(post.imgpath!=null){
