@@ -201,9 +201,9 @@ const follow= async (req,res)=>{
             }
         },{new:true});
 
-        if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
+        if(!result) return res.status(404).json({success:false,msg:'Subspace not found.'});
 
-        else res.status(200).json({success:true,msg:"followed"});
+        else res.status(200).json({success:true,msg:"followed",});
 
     } catch (err){
         return res.status(400).json({success:false,msg:`${err}`});
@@ -221,7 +221,7 @@ const unfollow= async (req,res)=>{
             }
         },{new:true});
 
-        if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
+        if(!result) return res.status(404).json({success:false,msg:'Subspace not found.'});
 
         else res.status(200).json({success:true,msg:"unfollowed"});
     } catch(err){
@@ -243,7 +243,7 @@ const topcommunities=async (req,res)=>{
 }
 const moretopcommunities=async (req,res)=>{
     try{
-        const {num}=req.body;
+        const num=req.params.num;
      const top=await subSpace.find().sort({"followers":-1}).skip(10*num).limit(10);
 
 

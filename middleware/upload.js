@@ -23,6 +23,16 @@ const fileFilter = (req,file,cb) => {
     else
         cb(null,false);
 }
+const imageFilter = (req,file,cb) => {
+    if(file.mimetype === 'image/jpeg'||
+    file.mimetype === 'image/jpg'||
+    file.mimetype === 'image/png'){
+    maxSixe=2*1024*1024;
+        cb(null,true);
+    }
+    else
+        cb(null,false);
+}
 
 
 
@@ -33,7 +43,16 @@ const uploadfile = multer({
     },
     fileFilter
 });
+const uploadImg = multer({
+    storage,
+    limits:{
+        fileSize:  maxSize
+    },
+    imageFilter
+});
 
 module.exports = {
+    uploadImg,
     uploadfile
 }
+
