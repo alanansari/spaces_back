@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
-const mongoose = require('mongoose');
 const fs = require('fs');
 
 const postform = async(req,res)=>{
@@ -119,7 +118,7 @@ const getlogfeed = async (req,res) => {
 
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
 
-        const upvoted = [];
+        const upvoted = [],downvoted=[];
 
         // posts.forEach(obj=>{
         //     const voted = User.find(user_name,{upvotes:{$in: [obj._id]}}).count();
@@ -130,16 +129,20 @@ const getlogfeed = async (req,res) => {
         // });
         
         for(let i=0;i<posts.length;i++){
-            let bool = false;
+            let bool = false,bool2=false;
             for(let j=0;j<user.upvotes.length;j++){
                 if(posts[i]._id.toString()===user.upvotes[j].toString()){
                     bool = true;
                 }
+                if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                    bool2 = true;
+                }
             }
             upvoted.push(bool);
+            downvoted.push(bool);
         }
 
-        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted});
+        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -150,7 +153,35 @@ const getmoreposts = async (req,res) => {
     try {
         const {num} = req.body;
         const posts = await Post.find().sort({createdAt:-1}).skip(10*num).limit(10);
-        return res.status(200).json(posts);
+
+        const upvoted = [],downvoted=[];
+
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        
+        if(token){
+
+            token = token.replace(/^Bearer\s+/, "");
+
+            const decode=await jwt.decode(token,"jwtsecret");
+            const user_name=decode.user_name;
+            const user = await User.findOne({user_name});
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false,bool2=false;
+                for(let j=0;j<user.upvotes.length;j++){
+                    if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                        bool = true;
+                    }
+                    if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                        bool2 = true;
+                    }
+                }
+                upvoted.push(bool);
+                downvoted.push(bool);
+            }
+        }
+
+        return res.status(200).json(posts,upvoted,downvoted);
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
