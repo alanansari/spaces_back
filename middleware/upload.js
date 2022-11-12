@@ -1,7 +1,11 @@
 const multer = require('multer');
 
+let maxSize = 3 * 1024 * 1024;
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+        if(file.mimetype === 'video/mp4')
+            maxSize = 50 * 1024 * 1024;
       cb(null, './uploads');
     },
     filename: function (req, file, cb) {
@@ -9,15 +13,14 @@ const storage = multer.diskStorage({
     }
 });
 
-let maxSize = 2 * 1024 * 1024;
+
 
 const fileFilter = (req,file,cb) => {
     if(file.mimetype === 'image/jpeg'||
     file.mimetype === 'image/jpg'||
     file.mimetype === 'image/png'||
     file.mimetype === 'video/mp4'){
-        if(file.mimetype === 'video/mp4')
-            maxSize = 50 * 1024 * 1024;
+        
         cb(null,true);
     }
     else
@@ -26,7 +29,8 @@ const fileFilter = (req,file,cb) => {
 const imageFilter = (req,file,cb) => {
     if(file.mimetype === 'image/jpeg'||
     file.mimetype === 'image/jpg'||
-    file.mimetype === 'image/png'){
+    file.mimetype === 'image/png'||
+    file.mimetype === 'video/mp4'){
         cb(null,true);
     }
     else
@@ -34,24 +38,15 @@ const imageFilter = (req,file,cb) => {
 }
 
 
-
-const uploadfile = multer({
-    storage,
-    limits:{
-        fileSize:  maxSize
-    },
-    fileFilter
-});
 const uploadImg = multer({
     storage,
     limits:{
-        fileSize:  5*1024*1024
+        fileSize:  maxSize
     },
     imageFilter
 });
 
 module.exports = {
-    uploadImg,
-    uploadfile
+    uploadImg
 }
 
