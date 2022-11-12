@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const Comment = require('../model/commentModel');
 const Post = require('../model/postModel');
+require('dotenv').config();
+const jwtsecret = process.env.jwtsecretkey1;
 
 const comment = async(req,res)=>{
     try {
@@ -112,86 +114,84 @@ const reply = async (req,res) => {
 const cupvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Comment.updateOne({_id},{
+        const result =  await Comment.updateOne({_id},{
            $inc:{
             votes:1
            }
-       })
-       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
-       else {
-        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:req.body._id} })
-      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(204).json({success:true,msg:result})
- }
-     }
-    catch(err)
-{
-    console.log(err);
-    return res.status(400).json({success:false,msg:`${err}`});
-}
+        })
+        if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+        else {
+            const user= await User.findOneAndUpdate({ _id:_id }, {
+                $addToSet: { cupvotes:_id},
+                $pull: {cdownvotes:_id},
+            });
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+            return res.status(200).json({success:true,msg:result});
+        }
+     } catch(err) {
+        console.log(err);
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
 }
 const cunupvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Comment.updateOne({_id},{
+        const result =  await Comment.updateOne({_id},{
            $inc:{
             votes:-1
            }
        })
-       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
-       else {
-        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:req.body._id} })
-      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(204).json({success:true,msg:result})
- }
-     }
-    catch(err)
-{
-    console.log(err);
-}
+        if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+        else {
+            const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:_id} })
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
+            return res.status(200).json({success:true,msg:result})
+        }
+     } catch(err) {
+        console.log(err);
+    }
 }
 const cdownvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Comment.updateOne({_id},{
+        const result =  await Comment.updateOne({_id},{
            $inc:{
             votes:-1
            }
-       })
-       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
-       else {
-        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $push: { cdownvotes:req.body._id} })
-      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(204).json({success:true,msg:result})
- }
+        });
+        if(!result) return res.status(404).json({success:false,msg:'Comment not found.'});
+        else {
+            const user= await User.findOneAndUpdate({ _id:req.user._id }, {
+                $addToSet: { cdownvotes:_id},
+                $pull: { cupvotes:_id}
+            });
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+            return res.status(200).json({success:true,msg:result});
+        }
      
-}
-    catch(err)
-{
-    console.log(err);
-}
+    }catch(err){
+        console.log(err);
+    }
 }
 const cundownvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Comment.updateOne({_id},{
-           $inc:{
-            votes:1
-           }
-       })
-       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'})
+        const result =  await Comment.updateOne({_id},{
+            $inc:{
+                votes:1
+            }
+        });
+
+       if(!result) return res.status(404).json({success:false,msg:'Comment not found.'});
        else {
-        const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cdownvotes:req.body._id} })
-      if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-      return res.status(204).json({success:true,msg:result})
- }
-     
-}
-    catch(err)
-{
-    console.log(err);
-    return res.status(400).json({success:false,msg:`${err}`});
-}
+            const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cdownvotes:_id} });
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+            return res.status(200).json({success:true,msg:result});
+        }
+    }catch(err){
+        console.log(err);
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
 }
 
 

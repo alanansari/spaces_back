@@ -4,6 +4,7 @@ const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
 const regexval = require("../middleware/validate");
 
+
 const signup = async (req,res)=>{
     try{
         //get user input
@@ -396,19 +397,19 @@ const emailupdateotp=async (req,res)=>{
 
 const imageupdate=async (req,res)=>{
   try{
+
     let filepath = null;
 
     if(req.file !== undefined){
         filepath = 'uploads/' + req.file.filename;
     }
+
     const user = await User.updateOne({_id:req.user._id},{
       displaypic:filepath   
   });
   return res.status(204).json({success:true,msg:'Profile Pic Added'});
 
-  }
-  catch(err)
-  {
+  } catch(err) {
     console.log(err);
     return res.status(400).json(err);
   }

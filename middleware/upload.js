@@ -9,7 +9,7 @@ const storage = multer.diskStorage({
     }
 });
 
-let maxSize = 5 * 1024 * 1024;
+let maxSize = 2 * 1024 * 1024;
 
 const fileFilter = (req,file,cb) => {
     if(file.mimetype === 'image/jpeg'||
@@ -27,7 +27,6 @@ const imageFilter = (req,file,cb) => {
     if(file.mimetype === 'image/jpeg'||
     file.mimetype === 'image/jpg'||
     file.mimetype === 'image/png'){
-    maxSixe=2*1024*1024;
         cb(null,true);
     }
     else
@@ -46,7 +45,7 @@ const uploadfile = multer({
 const uploadImg = multer({
     storage,
     limits:{
-        fileSize:  maxSize
+        fileSize:  5*1024*1024
     },
     imageFilter
 });

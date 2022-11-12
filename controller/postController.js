@@ -3,8 +3,10 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
-const mongoose = require('mongoose');
 const fs = require('fs');
+require('dotenv').config();
+const jwtsecret = process.env.jwtsecretkey1;
+
 
 const postform = async(req,res)=>{
     try {
@@ -69,8 +71,12 @@ const getpost = async (req,res) => {
 
 const getfeed = async (req,res) => {
     try {
-        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
+        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
+            { $group :{_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
+            { $sort :{ members: -1}}]).limit(5);
+
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
+
         return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
@@ -85,12 +91,14 @@ const getlogfeed = async (req,res) => {
         const mysubspaces = user.mysubspaces;
         const imgpath = user.displaypic;
 
-        const topcomm = await subSpace.find().sort({members:-1}).limit(5);
+        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
+            { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
+            { $sort :{ members: -1}}]).limit(5);
 
-        const posts = await Post.find().sort({createdAt:-1}).limit(10);
+        const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(20);
 
-        const upvoted = [];
-        
+        const upvoted = [],downvoted=[];
+
         for(let i=0;i<posts.length;i++){
             let bool = false;
             for(let j=0;j<user.upvotes.length;j++){
@@ -100,8 +108,18 @@ const getlogfeed = async (req,res) => {
             }
             upvoted.push(bool);
         }
+        
+        for(let i=0;i<posts.length;i++){
+            let bool = false;
+            for(let j=0;j<user.downvotes.length;j++){
+                if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                    bool = true;
+                }
+            }
+            downvoted.push(bool);
+        }    
 
-        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted});
+        return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -112,7 +130,42 @@ const getmoreposts = async (req,res) => {
     try {
         const {num} = req.body;
         const posts = await Post.find().sort({createdAt:-1}).skip(10*num).limit(10);
-        return res.status(200).json(posts);
+
+        const upvoted = [],downvoted=[];
+
+        let token=req.headers['accesstoken'] || req.headers['authorization'];
+        
+        if(token){
+
+            token = token.replace(/^Bearer\s+/, "");
+
+            const decode=await jwt.verify(token,jwtsecret);
+            const user_name=decode.user_name;
+            const user = await User.findOne({user_name});
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.upvotes.length;j++){
+                    if(posts[i]._id.toString()===user.upvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                upvoted.push(bool);
+            }
+
+            for(let i=0;i<posts.length;i++){
+                let bool = false;
+                for(let j=0;j<user.downvotes.length;j++){
+                    if(posts[i]._id.toString()===user.downvotes[j].toString()){
+                        bool = true;
+                    }
+                }
+                downvoted.push(bool);
+            }
+
+        }
+
+        return res.status(200).json(posts,upvoted,downvoted);
     } catch (err) {
         console.log(err);
         return res.status(400).json(err);
@@ -130,7 +183,7 @@ const upvote=async (req,res)=>{
        if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
        else {
             const user= await User.findOneAndUpdate({ _id:req.user._id }, { 
-                $push: { upvotes:req.body._Id},
+                $addToSet: { upvotes:req.body._Id},
                 $pull: { downvotes:req.body._Id}
             });
             if(!user) return res.status(404).json({success:false,msg:'User not found.'});
@@ -171,7 +224,7 @@ const downvote=async (req,res)=>{
             return res.status(404).json({success:false,msg:'Post not found.'});
         } else {
             const user= await User.findOneAndUpdate({ _id:req.user._id }, {
-                    $push: {downvotes:_id},
+                    $addToSet: {downvotes:_id},
                     $pull: { upvotes:_id}
                 });
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
@@ -212,8 +265,13 @@ const dltpost=async (req,res)=>{
         if(!post){
             return res.status(404).json({success:true,msg:"Post to be deleted not found"});
         }
-        if(req.user.user_name!==post.author){
-            return res.status(401).json({success:false,msg:"You are not the creator of this post."});
+
+        const subspace = post.subspace;
+        const sub = await subSpace.findOne({subspace});
+
+
+        if(req.user.user_name!==post.author&&req.user.user_name!==sub.admin){
+            return res.status(400).json({success:false,msg:"You are not the creator of this post."});
         }
         if(post.imgpath!=null){
             fs.unlinkSync('./'+post.imgpath);
