@@ -90,7 +90,7 @@ const viewsubspace = async (req,res) => {
             
         let token=req.headers['accesstoken'] || req.headers['authorization'];
 
-        const posts = await Post.find({subspace:name}).sort({createdAt:-1}).limit(10);
+        let posts = await Post.find({subspace:name}).sort({createdAt:-1}).limit(10);
 
         if(token){
             token = token.replace(/^Bearer\s+/, "");
@@ -109,6 +109,7 @@ const viewsubspace = async (req,res) => {
                     }
                 }
                 upvoted.push(bool);
+                posts[i]["upvoted"] = bool;
             }
 
             for(let i=0;i<posts.length;i++){
@@ -119,6 +120,7 @@ const viewsubspace = async (req,res) => {
                     }
                 }
                 downvoted.push(bool);
+                posts[i]["downvoted"] = bool;
             }
 
             for(let i=0;i<user.mysubspaces.length;i++){

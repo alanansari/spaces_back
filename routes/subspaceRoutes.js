@@ -6,7 +6,7 @@ const subspaceController = require('../controller/subspaceController');
 
 const router = express.Router();
 
-router.post('/newsubspace',validation.authverifytoken,Upload.uploadfile.single('image'),subspaceController.newsubspace);
+router.post('/newsubspace',validation.authverifytoken,Upload.uploadImg.single('image'),subspaceController.newsubspace);
 
 router.post('/search',subspaceController.search);
 
