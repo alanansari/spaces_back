@@ -28,8 +28,7 @@ const comment = async(req,res)=>{
 
         const comment = await Comment.create({
             author: user_name,
-            text,
-            votes:0
+            text
         });
 
         const appendcomm = await Post.findByIdAndUpdate(postId,{

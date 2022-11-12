@@ -104,7 +104,7 @@ const login = async (req, res) => {
 
         if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
 
-        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
+        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
       const updated=await User.updateOne({email},{
         $set:{
           token
@@ -141,7 +141,7 @@ const forgotpassword=async (req,res)=>{
         console.log('mail sent.');
         mailedOTP2 = result.OTP;
         const expiresat = Date.now() + 300000;
-        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
+        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
         const updated=await User.updateOne({email:email.toLowerCase()},{
           $set:{
             mailedOTP:mailedOTP2.toString(),
@@ -170,9 +170,9 @@ const changepassword=async (req,res)=>{
       res.status(400).send("All inputs are required");
     }
 
-    // if(!regexval.validatepass(newpassword)){
-    //   return res.status(400).send("Incorrect Password Format.");
-    // }
+    if(!regexval.validatepass(newpassword)){
+      return res.status(400).send("Incorrect Password Format.");
+    }
     
     const user_name=req.user.user_name;
     const user = await User.findOne({user_name});
@@ -205,7 +205,7 @@ const fverify = async (req,res) => {
     const user = await User.findOne({email});
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
-    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{
@@ -235,7 +235,7 @@ const sverify = async (req,res) => {
     const user = await User.findOne({email});
 
     if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
-    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"5h"});
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"});
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
       const emailstatus= await User.updateOne({email},{
         $set:{
@@ -310,7 +310,7 @@ const updatename=async (req,res)=>{
 
     if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
 
-    const token=jwt.sign({user_name:user_name},process.env.jwtsecretkey1,{expiresIn:"5h"})
+    const token=jwt.sign({user_name:user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
 
     const user=await User.updateOne({user_name:req.user.user_name},{
       $set:{
