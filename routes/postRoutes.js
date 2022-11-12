@@ -28,6 +28,6 @@ router.put('/undownvote',validation.authverifytoken,postController.undownvote);
 
 router.get('/:id',postController.getpost);
 
-router.delete('/deletepost/:id',validation.authverifytoken,postController.dltpost);
+router.delete('/delete/:id',validation.authverifytoken,postController.dltpost);
 
 module.exports = router;

@@ -8,7 +8,7 @@ const authverifytoken=async (req,res,next)=>{
     let token=req.headers['accesstoken'] || req.headers['authorization'];
     token = token.replace(/^Bearer\s+/, "");
     if(!token)
-      return res.status(409).json({sucess:false,msg:"Invalid account"});
+      return res.status(409).json({sucess:false,msg:"Please login/signup before proceeding"});
     else{
       const verify=await jwt.verify(token,process.env.jwtsecretkey1,async (err,payload)=>{
         if(err){
@@ -21,7 +21,7 @@ const authverifytoken=async (req,res,next)=>{
       });
     }
     } catch(err){
-        return res.status(409).json({success:false,msg:"No Token Found"});
+        return res.status(409).json({success:false,msg: err.message });
     }
   }
   module.exports={

@@ -32,7 +32,7 @@ const comment = async(req,res)=>{
         });
 
         const appendcomm = await Post.findByIdAndUpdate(postId,{
-            $push:{comments:comment._id}
+            $addToSet:{comments:comment._id}
         });
 
         return res.status(200).json({success:true,msg:'Posted Comment'});
@@ -109,7 +109,7 @@ const reply = async (req,res) => {
         });
 
         const appendcomm = await Comment.findByIdAndUpdate(commId,{
-            $push:{childId:comment._id}
+            $addToSet:{childId:comment._id}
         });
 
         return res.status(200).json({success:true,msg:'Posted Comment reply'});

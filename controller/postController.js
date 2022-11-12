@@ -22,7 +22,7 @@ const postform = async(req,res)=>{
         return res.status(200).json(user.mysubspaces);
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -60,7 +60,7 @@ const newpost = async (req,res) => {
 
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -78,23 +78,30 @@ const getpost = async (req,res) => {
 
     } catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
 
 const getfeed = async (req,res) => {
     try {
-        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
-            { $group :{_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
-            { $sort :{ members: -1}}]).limit(5);
+        let topcomm = await subSpace.aggregate([
+            {$unwind:"$members"},
+            { 
+             $group :{_id:'$_id',
+             name:{ "$first": "$name" },
+             members:{$sum:1},
+             createdAt:{ "$first": "$createdAt" }}
+            },
+            {$sort:{members: -1,createdAt: -1}}
+        ]).limit(5);
 
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
 
         return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -110,9 +117,16 @@ const getlogfeed = async (req,res) => {
         const mysubspaces = user.mysubspaces;
         const imgpath = user.displaypic;
 
-        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
-            { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
-            { $sort :{ members: -1}}]).limit(5);
+        let topcomm = await subSpace.aggregate([
+            {$unwind:"$members"},
+            { 
+             $group :{_id:'$_id',
+             name:{ "$first": "$name" },
+             members:{$sum:1},
+             createdAt:{ "$first": "$createdAt" }}
+            },
+            {$sort:{members: -1,createdAt: -1}}
+        ]).limit(5);
 
         let posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
         const restposts = await Post.find({subspace:{$nin:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
@@ -135,6 +149,7 @@ const getlogfeed = async (req,res) => {
             for(let j=0;j<user.downvotes.length;j++){
                 if(posts[i]._id.toString()===user.downvotes[j].toString()){
                     bool = true;
+                    break;
                 }
             }
             downvoted.push(bool);
@@ -143,7 +158,7 @@ const getlogfeed = async (req,res) => {
         return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -169,6 +184,7 @@ const getmoreposts = async (req,res) => {
                 for(let j=0;j<user.upvotes.length;j++){
                     if(posts[i]._id.toString()===user.upvotes[j].toString()){
                         bool = true;
+                        break;
                     }
                 }
                 upvoted.push(bool);
@@ -179,6 +195,7 @@ const getmoreposts = async (req,res) => {
                 for(let j=0;j<user.downvotes.length;j++){
                     if(posts[i]._id.toString()===user.downvotes[j].toString()){
                         bool = true;
+                        break;
                     }
                 }
                 downvoted.push(bool);
@@ -189,7 +206,7 @@ const getmoreposts = async (req,res) => {
         return res.status(200).json(posts,upvoted,downvoted);
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -230,7 +247,7 @@ const upvote=async (req,res)=>{
         
     }   catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -272,7 +289,7 @@ const unupvote=async (req,res)=>{
     }catch(err)
     {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 const downvote=async (req,res)=>{
@@ -311,7 +328,7 @@ const downvote=async (req,res)=>{
         return res.status(400).json({success:true,msg:"Already Downvoted."});
     }  catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
         
@@ -351,7 +368,7 @@ const undownvote=async (req,res)=>{
         return res.status(400).json({success:false,msg:"Already Upvoted/Undownvoted"});
     } catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -384,7 +401,7 @@ const dltpost=async (req,res)=>{
     catch(err)
     {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
     
