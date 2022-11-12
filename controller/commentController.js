@@ -135,7 +135,7 @@ const cupvote=async (req,res)=>{
                 $pull: {cdownvotes:_id},
             });
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-            return res.status(200).json({success:true,msg:result});
+            return res.status(200).json({success:true,msg:"Comment upvote"});
         }
      } catch(err) {
         console.log(err);
@@ -154,7 +154,7 @@ const cunupvote=async (req,res)=>{
         else {
             const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cupvotes:_id} })
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'})
-            return res.status(200).json({success:true,msg:result})
+            return res.status(200).json({success:true,msg:"Comment unupvoed"})
         }
      } catch(err) {
         console.log(err);
@@ -175,7 +175,7 @@ const cdownvote=async (req,res)=>{
                 $pull: { cupvotes:_id}
             });
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-            return res.status(200).json({success:true,msg:result});
+            return res.status(200).json({success:true,msg:"Comment downvoted"});
         }
      
     }catch(err){
@@ -195,7 +195,7 @@ const cundownvote=async (req,res)=>{
        else {
             const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { cdownvotes:_id} });
             if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-            return res.status(200).json({success:true,msg:result});
+            return res.status(200).json({success:true,msg:"Comment undownvoted"});
         }
     }catch(err){
         console.log(err);
