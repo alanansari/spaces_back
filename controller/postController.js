@@ -85,9 +85,16 @@ const getpost = async (req,res) => {
 
 const getfeed = async (req,res) => {
     try {
-        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
-            { $group :{_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
-            { $sort :{ members: -1}}]).limit(5);
+        let topcomm = await subSpace.aggregate([
+            {$unwind:"$members"},
+            { 
+             $group :{_id:'$_id',
+             name:{ "$first": "$name" },
+             members:{$sum:1},
+             createdAt:{ "$first": "$createdAt" }}
+            },
+            {$sort:{members: -1,createdAt: -1}}
+        ]).limit(5);
 
         const posts = await Post.find().sort({createdAt:-1}).limit(10);
 
@@ -110,9 +117,16 @@ const getlogfeed = async (req,res) => {
         const mysubspaces = user.mysubspaces;
         const imgpath = user.displaypic;
 
-        let topcomm = await subSpace.aggregate([{$unwind:"$members"},
-            { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
-            { $sort :{ members: -1}}]).limit(5);
+        let topcomm = await subSpace.aggregate([
+            {$unwind:"$members"},
+            { 
+             $group :{_id:'$_id',
+             name:{ "$first": "$name" },
+             members:{$sum:1},
+             createdAt:{ "$first": "$createdAt" }}
+            },
+            {$sort:{members: -1,createdAt: -1}}
+        ]).limit(5);
 
         let posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
         const restposts = await Post.find({subspace:{$nin:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
@@ -135,6 +149,7 @@ const getlogfeed = async (req,res) => {
             for(let j=0;j<user.downvotes.length;j++){
                 if(posts[i]._id.toString()===user.downvotes[j].toString()){
                     bool = true;
+                    break;
                 }
             }
             downvoted.push(bool);
@@ -169,6 +184,7 @@ const getmoreposts = async (req,res) => {
                 for(let j=0;j<user.upvotes.length;j++){
                     if(posts[i]._id.toString()===user.upvotes[j].toString()){
                         bool = true;
+                        break;
                     }
                 }
                 upvoted.push(bool);
@@ -179,6 +195,7 @@ const getmoreposts = async (req,res) => {
                 for(let j=0;j<user.downvotes.length;j++){
                     if(posts[i]._id.toString()===user.downvotes[j].toString()){
                         bool = true;
+                        break;
                     }
                 }
                 downvoted.push(bool);

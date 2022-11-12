@@ -204,20 +204,25 @@ const fverify = async (req,res) => {
     }
     const user = await User.findOne({email});
 
-    if(!user) return res.status(400).json({success:false,msg:'user not found by the given mail'});
-    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
+    if(!user) 
+      return res.status(400).json({success:false,msg:'user not found by the given mail'});
+
+    const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"});
+
     if(user.mailedOTP===otp && user.expiryOTP > Date.now()){
+
       const emailstatus= await User.updateOne({email},{
         $set:{
           expiryOTP: Date.now(),
           token
         }
       });
+
       return res.status(200).json({success:true,msg:'OTP Verified!',token:token});
-    }else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
+
+    } else if(user.mailedOTP===otp && user.expiryOTP <= Date.now()){
       return res.status(400).json({success:false,msg:'This OTP has expired'});
-    }
-    else{
+    } else{
       return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
      
@@ -254,6 +259,7 @@ const sverify = async (req,res) => {
      
   }catch(err){
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
   }
 }
 
@@ -292,78 +298,79 @@ const resendotp=async (req,res)=>{
 
 const updatename=async (req,res)=>{
   try{
-  const {user_name,password}=req.body;
-  if(!user_name)
-  {
-    return res.status(400).json({sucess: false,msg:'Username required'});
-  }
-  if(!password)
-  {
-    return res.status(400).json({sucess: false,msg:'Password required'});
-  }
+    const {user_name,password}=req.body;
+
+    if(!user_name){
+      return res.status(400).json({sucess: false,msg:'Username required'});
+    }
+    if(!password){
+      return res.status(400).json({sucess: false,msg:'Password required'});
+    }
+
     const user_namecheck=await User.findOne({user_name});
-    if(user_namecheck)
-    {
+
+    if(user_namecheck){
       return res.status(400).json({sucess: false,msg:'Username already exists'});
     }
+
     const result = await bcrypt.compare(password, req.user.password);
 
-    if (!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
+    if(!result) return res.status(409).json({sucess:false,msg:"Wrong Password"});
 
-    const token=jwt.sign({user_name:user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
+    const token=jwt.sign({user_name:user_name},process.env.jwtsecretkey1,{expiresIn:"1d"});
 
     const user=await User.updateOne({user_name:req.user.user_name},{
       $set:{
         user_name,
         token
       }
-    })
+    });
+
    if(user)     
-  return res.status(200).json({success:true,msg:'Username changed',token:token});
-   }
-  catch(err)
-  {
+    return res.status(200).json({success:true,msg:'Username changed',token:token});
+
+  } catch(err){
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
   }
 }
 const emailupdate=async (req,res)=>{
   try{
-  const {email}=req.body;
-  if(!email)
-  {
-    return res.status(400).json({sucess: false,msg:'Email required'});    
+    const {email}=req.body;
+
+    if(!email){
+      return res.status(400).json({sucess: false,msg:'Email required'});    
+    }
+    const emailcheck=await User.findOne({email});
+
+    if(emailcheck){
+      return res.status(400).json({sucess: false,msg:'This email already has an account'}); 
+    }
+    sendotp(email);
+    let mailedOTP2;
+
+
+    async function sendotp(emailId){
+      const result =  await Auth(emailId, "Spaces");
+      if(result.success==true){
+        console.log('mail sent.');
+        mailedOTP2 = result.OTP;
+        console.log(mailedOTP2);
+        const expiresat = Date.now() + 300000;
+        const updated=await User.updateOne({user_name:req.user.user_name},{
+          $set:{
+            mailedOTP:mailedOTP2.toString(),
+            expiryOTP: expiresat
+          }
+        });
+
+        return res.status(200).json({sucess: true,msg:'OTP sent'});
+      }
+    }
+  } catch(err) {
+    console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
   }
-  const emailcheck=await User.findOne({email});
-  if(emailcheck)
-  {
-    return res.status(400).json({sucess: false,msg:'This email already has an account'}); 
-  }
-  sendotp(email);
-  let mailedOTP2;
-
-
-  async function sendotp(emailId){
-    const result =  await Auth(emailId, "Spaces");
-    if(result.success==true){
-      console.log('mail sent.');
-      mailedOTP2 = result.OTP;
-      console.log(mailedOTP2);
-      const expiresat = Date.now() + 300000;
-      const updated=await User.updateOne({user_name:req.user.user_name},{
-        $set:{
-          mailedOTP:mailedOTP2.toString(),
-          expiryOTP: expiresat
-        }
-      });
-
-      return res.status(200).json({sucess: true,msg:'OTP sent'});
-}}
-}
-
-catch(err)
-{
-  console.log(err);
-}
 }
 
 const emailupdateotp=async (req,res)=>{
@@ -387,32 +394,30 @@ const emailupdateotp=async (req,res)=>{
     else{
       return res.status(400).json({success:false,msg:'Wrong OTP entered.'});
     }
-  }
-  catch(err)
-  {
+  } catch(err) {
     console.log(err);
   }
 }
 
-const imageupdate=async (req,res)=>{
-  try{
+  const imageupdate=async (req,res)=>{
+    try{
 
-    let filepath = null;
+      let filepath = null;
 
-    if(req.file !== undefined){
-        filepath = 'uploads/' + req.file.filename;
+      if(req.file !== undefined){
+          filepath = 'uploads/' + req.file.filename;
+      }
+
+      const user = await User.updateOne({_id:req.user._id},{
+        displaypic:filepath   
+      });
+      
+      return res.status(200).json({success:true,msg:'Profile Pic Added'});
+
+    } catch(err) {
+      console.log(err);
+      return res.status(400).json(err);
     }
-
-    const user = await User.updateOne({_id:req.user._id},{
-      displaypic:filepath   
-    });
-    
-    return res.status(200).json({success:true,msg:'Profile Pic Added'});
-
-  } catch(err) {
-    console.log(err);
-    return res.status(400).json(err);
-  }
 }
 
 
