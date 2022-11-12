@@ -114,8 +114,10 @@ const getlogfeed = async (req,res) => {
             { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
             { $sort :{ members: -1}}]).limit(5);
 
-        const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(20);
+        const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
+        const restposts = await Post.find({subspace:{$nin:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
 
+        posts = posts.concat(restposts);
         const upvoted = [],downvoted=[];
 
         for(let i=0;i<posts.length;i++){
@@ -194,13 +196,28 @@ const getmoreposts = async (req,res) => {
 const upvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-        const result =  await Post.updateOne({_id},{
-            $inc:{
-                votes:1
+
+        let arr = req.user.upvotes;
+        
+        let bool = false;
+    
+        for(let j=0;j<arr.length;j++){
+            bool = false
+            if(_id.toString()===arr[j].toString()){
+                bool = true;
+                break;
             }
-        });
-       if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
-       else {
+        }
+               
+        if(bool===false){
+            const result =  await Post.updateOne({_id},{
+                $inc:{
+                    votes:1
+                }
+            });
+
+            if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
+        
             const user= await User.findOneAndUpdate({ _id:req.user._id }, { 
                 $addToSet: { upvotes:req.body._Id},
                 $pull: { downvotes:req.body._Id}
@@ -208,6 +225,9 @@ const upvote=async (req,res)=>{
             if(!user) return res.status(404).json({success:false,msg:'User not found.'});
             return res.status(200).json({success:true,msg:"Upvoted."});
         }
+
+        return res.status(400).json({success:false,msg:"Already upvoted."});
+        
     }   catch(err) {
         console.log(err);
         return res.status(400).json(err);
@@ -217,14 +237,38 @@ const upvote=async (req,res)=>{
 const unupvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Post.updateOne({_id},{
-        $inc:{
-            votes:-1
-           }
-       })
-       const user= await User.findOneAndUpdate({ _id:req.user._id }, { $pull: { upvotes:req.body._Id} });
-     if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-     else res.status(200).json({success:true,msg:"Unupvoted."});
+
+        let arr = req.user.upvotes;
+
+        let bool = false;
+    
+        for(let j=0;j<arr.length;j++){
+            bool = false
+            if(_id.toString()===arr[j].toString()){
+                bool = true;
+                break;
+            }
+        }
+
+        if(bool===true){
+
+            const result =  await Post.updateOne({_id},{
+            $inc:{
+                votes:-1
+            }
+            });
+
+            const user= await User.findOneAndUpdate({ _id:req.user._id },
+                { $pull: { upvotes:req.body._Id} }
+            );
+
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+            
+            return res.status(200).json({success:true,msg:"Unupvoted."});
+        }
+
+        return res.status(400).json({success:false,msg:"Already Unupvoted/Downvoted."});
+
     }catch(err)
     {
         console.log(err);
@@ -234,21 +278,37 @@ const unupvote=async (req,res)=>{
 const downvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-        const result =  await Post.updateOne({_id},{
-            $inc:{
-                votes:-1
+
+        let arr = req.user.downvotes;
+        
+        let bool = false;
+    
+        for(let j=0;j<arr.length;j++){
+            bool = false
+            if(_id.toString()===arr[j].toString()){
+                bool = true;
+                break;
             }
-        });
-        if(!result.acknowledged){ 
-            return res.status(404).json({success:false,msg:'Post not found.'});
-        } else {
-            const user= await User.findOneAndUpdate({ _id:req.user._id }, {
-                    $addToSet: {downvotes:_id},
-                    $pull: { upvotes:_id}
-                });
-            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-            return res.status(200).json({success:true,msg:"Downvoted"});
         }
+
+        if(bool===false){
+            const result =  await Post.updateOne({_id},{
+                $inc:{
+                    votes:-1
+                }
+            });
+            if(!result.acknowledged){ 
+                return res.status(404).json({success:false,msg:'Post not found.'});
+            }
+            
+                const user= await User.findOneAndUpdate({ _id:req.user._id }, {
+                        $addToSet: {downvotes:_id},
+                        $pull: { upvotes:_id}
+                    });
+                if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+                return res.status(200).json({success:true,msg:"Downvoted"});
+        }
+        return res.status(400).json({success:true,msg:"Already Downvoted."});
     }  catch(err) {
         console.log(err);
         return res.status(400).json(err);
@@ -258,19 +318,37 @@ const downvote=async (req,res)=>{
 const undownvote=async (req,res)=>{
     try{
         const _id=req.body._Id;
-    const result =  await Post.updateOne({_id},{
-           $inc:{
-            votes:1
-           }
-       });
-       if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
-       else {
-       const user= await User.findOneAndUpdate({ _id:req.user._id }, {
-            $pull: { downvotes:req.body._Id} 
-        });
-        if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
-        return res.status(200).json({success:true,msg:"Undownvoted"});
+
+        let arr = req.user.downvotes;
+        
+        let bool = false;
+    
+        for(let j=0;j<arr.length;j++){
+            bool = false
+            if(_id.toString()===arr[j].toString()){
+                bool = true;
+                break;
+            }
         }
+
+        if(bool===true){
+
+            const result =  await Post.updateOne({_id},{
+                $inc:{
+                    votes:1
+                }
+            });
+
+            if(!result) return res.status(404).json({success:false,msg:'Post not found.'});
+        
+            const user= await User.findOneAndUpdate({ _id:req.user._id }, {
+                $pull: { downvotes:req.body._Id} 
+            });
+            if(!user) return res.status(404).json({success:false,msg:'Post not found.'});
+
+            return res.status(200).json({success:true,msg:"Undownvoted"});
+        }
+        return res.status(400).json({success:false,msg:"Already Upvoted/Undownvoted"});
     } catch(err) {
         console.log(err);
         return res.status(400).json(err);
