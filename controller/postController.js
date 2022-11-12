@@ -22,7 +22,7 @@ const postform = async(req,res)=>{
         return res.status(200).json(user.mysubspaces);
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -60,7 +60,7 @@ const newpost = async (req,res) => {
 
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -78,7 +78,7 @@ const getpost = async (req,res) => {
 
     } catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -94,7 +94,7 @@ const getfeed = async (req,res) => {
         return res.status(200).json({topcomm,posts});
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -143,7 +143,7 @@ const getlogfeed = async (req,res) => {
         return res.status(200).json({user_name,imgpath,mysubspaces,topcomm,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -189,7 +189,7 @@ const getmoreposts = async (req,res) => {
         return res.status(200).json(posts,upvoted,downvoted);
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -230,7 +230,7 @@ const upvote=async (req,res)=>{
         
     }   catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -272,7 +272,7 @@ const unupvote=async (req,res)=>{
     }catch(err)
     {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 const downvote=async (req,res)=>{
@@ -311,7 +311,7 @@ const downvote=async (req,res)=>{
         return res.status(400).json({success:true,msg:"Already Downvoted."});
     }  catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
         
@@ -351,7 +351,7 @@ const undownvote=async (req,res)=>{
         return res.status(400).json({success:false,msg:"Already Upvoted/Undownvoted"});
     } catch(err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -384,7 +384,7 @@ const dltpost=async (req,res)=>{
     catch(err)
     {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
     

@@ -50,7 +50,7 @@ const newsubspace = async (req,res) => {
         });
 
         const becomemem = await subSpace.findOneAndUpdate({name},{
-            $push:{members:req.user._id}
+            $addToSet:{members:req.user._id}
         },{new:true}).exec((err,result)=>{
             if(err){
                 return res.status(400).json({success:false,msg:"Not able to add user to subspace"});
@@ -58,7 +58,7 @@ const newsubspace = async (req,res) => {
         });
 
         const addspace = await User.findOneAndUpdate({user_name},{
-            $push:{mysubspaces:name}
+            $addToSet:{mysubspaces:name}
         },{new:true}).exec((err,result)=>{
             if(err){
                 return res.status(400).json({success:false,msg:"Not able to add to user's subspaces"});
@@ -71,7 +71,7 @@ const newsubspace = async (req,res) => {
         
     } catch (err){
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -134,7 +134,7 @@ const viewsubspace = async (req,res) => {
         return res.status(200).json({user_name,following,imgpath,subspace,posts,upvoted,downvoted});
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -183,7 +183,7 @@ const viewmoresubspace = async (req,res) => {
     } catch (err) {
         
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -257,7 +257,7 @@ const moretopcommunities=async (req,res)=>{
         return res.status(200).json({top});
     } catch (err) {
         console.log(err);
-        return res.status(400);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
@@ -279,7 +279,7 @@ const search = async (req,res) => {
         return res.status(200).json(subs);
     } catch (err) {
         console.log(err);
-        return res.status(400).json(err);
+        return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
