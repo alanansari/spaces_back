@@ -114,7 +114,7 @@ const getlogfeed = async (req,res) => {
             { $group : {_id:'$_id',name:{ "$first": "$name" }, members:{$sum:1}}},
             { $sort :{ members: -1}}]).limit(5);
 
-        const posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
+        let posts = await Post.find({subspace:{$in:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
         const restposts = await Post.find({subspace:{$nin:user.mysubspaces}}).sort({createdAt:-1}).limit(10);
 
         posts = posts.concat(restposts);
