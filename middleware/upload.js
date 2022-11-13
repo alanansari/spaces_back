@@ -1,6 +1,6 @@
 const multer = require('multer');
 
-let maxSize = 15 * 1024 * 1024;
+let maxSize = 5 * 1024 * 1024;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -12,23 +12,10 @@ const storage = multer.diskStorage({
 });
 
 
-
-// const fileFilter = (req,file,cb) => {
-//     if(!(((file.mimetype === 'image/jpeg'||
-//     file.mimetype === 'image/jpg'||
-//     file.mimetype === 'image/png')&&file.size<=3*1024*1024)||
-//     (file.mimetype === 'video/mp4'&&file.size<=50*1024*1024))){
-//         cb(null,false,new Error('File too large'));
-//     }
-//     else
-//         cb(null,true);
-// }
-
 const imageFilter = (req,file,cb) => {
     if(file.mimetype === 'image/jpeg'||
     file.mimetype === 'image/jpg'||
-    file.mimetype === 'image/png'||
-    file.mimetype === 'video/mp4'){
+    file.mimetype === 'image/png'){
         cb(null,true);
     }
     else
