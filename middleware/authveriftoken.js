@@ -8,12 +8,12 @@ const authverifytoken=async (req,res,next)=>{
     let token=req.headers['accesstoken'] || req.headers['authorization'];
     
     if(!token)
-      return res.status(409).json({sucess:false,msg:"Please login/signup before proceeding"});
+      return res.status(409).json({sucess:false,msg:"Please login or signup before proceeding"});
     else{
       token = token.replace(/^Bearer\s+/, "");
       const verify=await jwt.verify(token,process.env.jwtsecretkey1,async (err,payload)=>{
         if(err){
-          return res.status(409).json({sucess:false,msg:"Invalid account"});  
+          return res.status(409).json({sucess:false,msg:"Invalid or Expired Token"});  
         }
         const {user_name}=payload;
         const user=await User.findOne({user_name});

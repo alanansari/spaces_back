@@ -4,7 +4,8 @@ const {ObjectId} = mongoose.Schema.Types;
 const commentSchema = new mongoose.Schema({
     postId:{
         type: ObjectId,
-        ref: "posts"
+        ref: "posts",
+        required: true
     },
     author:{ 
         type: String,

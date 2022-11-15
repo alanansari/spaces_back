@@ -220,7 +220,7 @@ const cundownvote=async (req,res)=>{
 const mycomments = async (req,res) => {
     try {
         const {user_name} = req.user;
-        let mycomments = await Comment.find({author:user_name},{childId:0})
+        let mycomments = await Comment.find({author:user_name},{childId:0,author:0})
                                 .populate('postId','_id subspace heading');
 
         

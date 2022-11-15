@@ -293,8 +293,7 @@ const unupvote=async (req,res)=>{
 
         return res.status(400).json({success:false,msg:"Already Not Upvoted."});
 
-    }catch(err)
-    {
+    }catch(err){
         console.log(err);
         return res.status(400).json({success:false,msg:`${err}`});
     }
@@ -334,7 +333,7 @@ const downvote=async (req,res)=>{
             if(!result.acknowledged){ 
                 return res.status(404).json({success:false,msg:'Post not found.'});
             }
-            
+
                 const user= await User.findOneAndUpdate({ _id:req.user._id }, {
                         $addToSet: {downvotes:_id},
                         $pull: { upvotes:_id}
@@ -425,7 +424,9 @@ const dltpost=async (req,res)=>{
 const myposts = async (req,res) => {
     try {
         const {user_name} = req.user;
-        const myposts = await Post.find({author:user_name});
+        const num = req.query.num || 0;
+        const myposts = await Post.find({author:user_name},{para:0,author:0}).sort({createdAt:-1});
+        res.status(200).json({myposts});
     } catch (err) {
         return res.status(400).json({success:false,msg:`${err}`});
     }
@@ -442,5 +443,6 @@ module.exports = {
     unupvote,
     downvote,
     undownvote,
-    dltpost
+    dltpost,
+    myposts
 }

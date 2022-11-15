@@ -266,7 +266,7 @@ const search = async (req,res) => {
         const {text} = req.body;
         let docs = await subSpace.aggregate([
             { $match:{name: {$regex: text ,'$options': 'i'}} }
-          ]).limit(5);
+        ]).limit(5);
         
         if(!docs) return res.status(400).json({msg:'Not able to search.'});
 
