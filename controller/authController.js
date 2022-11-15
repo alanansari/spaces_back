@@ -265,7 +265,7 @@ const sverify = async (req,res) => {
 
 const resendotp=async (req,res)=>{
   try{
-    const {email}=req.body
+    const {email}=req.body;
     const user = await User.findOne({email});
 
     sendotp(email);

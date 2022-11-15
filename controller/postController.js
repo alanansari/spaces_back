@@ -215,21 +215,29 @@ const upvote=async (req,res)=>{
         const _id=req.body._Id;
 
         let arr = req.user.upvotes;
+        let arr2 = req.user.downvotes;
         
-        let bool = false;
+        let upvoted = false,downvoted=false;
     
         for(let j=0;j<arr.length;j++){
-            bool = false
             if(_id.toString()===arr[j].toString()){
-                bool = true;
+                upvoted = true;
+                break;
+            }
+        }
+
+        for(let j=0;j<arr2.length;j++){
+            if(_id.toString()===arr2[j].toString()){
+                downvoted = true;
                 break;
             }
         }
                
-        if(bool===false){
+        if(upvoted===false){
+            let incr = downvoted ? 2 : 1;
             const result =  await Post.updateOne({_id},{
                 $inc:{
-                    votes:1
+                    votes:incr
                 }
             });
 
@@ -260,7 +268,6 @@ const unupvote=async (req,res)=>{
         let bool = false;
     
         for(let j=0;j<arr.length;j++){
-            bool = false
             if(_id.toString()===arr[j].toString()){
                 bool = true;
                 break;
@@ -284,10 +291,9 @@ const unupvote=async (req,res)=>{
             return res.status(200).json({success:true,msg:"Unupvoted."});
         }
 
-        return res.status(400).json({success:false,msg:"Already Unupvoted/Downvoted."});
+        return res.status(400).json({success:false,msg:"Already Not Upvoted."});
 
-    }catch(err)
-    {
+    }catch(err){
         console.log(err);
         return res.status(400).json({success:false,msg:`${err}`});
     }
@@ -297,8 +303,9 @@ const downvote=async (req,res)=>{
         const _id=req.body._Id;
 
         let arr = req.user.downvotes;
+        let arr2 = req.user.upvotes;
         
-        let bool = false;
+        let bool = false,upvoted = false;
     
         for(let j=0;j<arr.length;j++){
             bool = false
@@ -308,16 +315,25 @@ const downvote=async (req,res)=>{
             }
         }
 
+        for(let j=0;j<arr2.length;j++){
+            if(_id.toString()===arr2[j].toString()){
+                upvoted = true;
+                break;
+            }
+        }
+
         if(bool===false){
+
+            let decr = upvoted ? -2 : -1;
             const result =  await Post.updateOne({_id},{
                 $inc:{
-                    votes:-1
+                    votes:decr
                 }
             });
             if(!result.acknowledged){ 
                 return res.status(404).json({success:false,msg:'Post not found.'});
             }
-            
+
                 const user= await User.findOneAndUpdate({ _id:req.user._id }, {
                         $addToSet: {downvotes:_id},
                         $pull: { upvotes:_id}
@@ -365,7 +381,7 @@ const undownvote=async (req,res)=>{
 
             return res.status(200).json({success:true,msg:"Undownvoted"});
         }
-        return res.status(400).json({success:false,msg:"Already Upvoted/Undownvoted"});
+        return res.status(400).json({success:false,msg:"Already Not Downvoted"});
     } catch(err) {
         console.log(err);
         return res.status(400).json({success:false,msg:`${err}`});
@@ -404,7 +420,17 @@ const dltpost=async (req,res)=>{
         return res.status(400).json({success:false,msg:`${err}`});
     }
 }
-    
+ 
+const myposts = async (req,res) => {
+    try {
+        const {user_name} = req.user;
+        const num = req.query.num || 0;
+        const myposts = await Post.find({author:user_name},{para:0,author:0}).sort({createdAt:-1});
+        res.status(200).json({myposts});
+    } catch (err) {
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
+}
 
 module.exports = {
     postform,
@@ -417,5 +443,6 @@ module.exports = {
     unupvote,
     downvote,
     undownvote,
-    dltpost
+    dltpost,
+    myposts
 }

@@ -16,6 +16,8 @@ router.post('/next',postController.getmoreposts);
 
 router.get('/postform',validation.authverifytoken,postController.postform);
 
+router.get('/myposts',validation.authverifytoken,postController.myposts);
+
 router.post('/newpost',validation.authverifytoken, Upload.uploadImg.single('image'), postController.newpost);
 
 router.put('/upvote',validation.authverifytoken,postController.upvote);

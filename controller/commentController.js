@@ -27,8 +27,10 @@ const comment = async(req,res)=>{
         if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
 
         const comment = await Comment.create({
+            postId,
             author: user_name,
-            text
+            text,
+            createdAt: Date.now()
         });
 
         const appendcomm = await Post.findByIdAndUpdate(postId,{
@@ -45,7 +47,7 @@ const comment = async(req,res)=>{
 const getpostcomm = async(req,res) => {
     try {
         const postId = req.params.id;
-        const num = Number(req.params.num);
+        const num = Number(req.params.num) || 0;
         const post = await Post.findById(postId).populate('comments');
 
         if(!post){
@@ -54,7 +56,9 @@ const getpostcomm = async(req,res) => {
 
         let {comments} = post;
 
-        comments = comments.slice(num*10,num+10);
+        comments.sort((a,b)=>b.votes-a.votes);
+
+        comments = comments.slice(num*10,num*10+10);
 
         return res.status(200).json({comments});
 
@@ -67,7 +71,7 @@ const replies = async (req,res) => {
     try {
 
         const commId = req.params.id;
-        const num = Number(req.params.num);
+        const num = Number(req.params.num) || 0;
 
         const comment = await Comment.findById(commId).populate('childId');
 
@@ -75,8 +79,10 @@ const replies = async (req,res) => {
             return res.status(404).json({success:false,msg:'Comment not found.'});
 
         let comments = comment.childId;
-        //comments.sort({votes:-1}).sort({createdAt:-1});
-        comments = comments.slice(num*10,num+10);
+        
+        comments.sort((a,b)=>b.votes-a.votes);
+
+        comments = comments.slice(num*10,num*10+10);
 
         return res.status(200).json({comments});
         
@@ -101,11 +107,20 @@ const reply = async (req,res) => {
         const user_name=decode.user_name;
         const user = await User.findOne({user_name});
 
-        if (!user) return res.status(409).json({sucess:false,msg:"This username doesn't have an account"});
+        if (!user) return res.status(400).json({sucess:false,msg:"This username doesn't have an account"});
+
+        const parentcomm = await Comment.findById(commId);
+
+        if (!parentcomm)
+            return res.status(400).json({success:false,msg:"No comment found to reply to"});
+
+        const postId = parentcomm.postId || 0;
 
         const comment = await Comment.create({
             author: user_name,
-            text
+            postId,
+            text,
+            createdAt: Date.now()
         });
 
         const appendcomm = await Comment.findByIdAndUpdate(commId,{
@@ -202,6 +217,20 @@ const cundownvote=async (req,res)=>{
     }
 }
 
+const mycomments = async (req,res) => {
+    try {
+        const {user_name} = req.user;
+        let mycomments = await Comment.find({author:user_name},{childId:0,author:0})
+                                .populate('postId','_id subspace heading');
+
+        
+        return res.status(200).json({mycomments});
+        
+    } catch (err) {
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
+}
+
 
 module.exports = {
     comment,
@@ -212,4 +241,5 @@ module.exports = {
     cdownvote,
     cunupvote,
     cundownvote,
+    mycomments
 }
