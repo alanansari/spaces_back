@@ -264,9 +264,8 @@ const moretopcommunities=async (req,res)=>{
 const search = async (req,res) => {
     try {
         const {text} = req.body;
-        const filter = {$regex: text ,'$options': 'i'};
         let docs = await subSpace.aggregate([
-            { $match:{name: filter} }
+            { $match:{name: {$regex: text ,'$options': 'i'}} }
           ]).limit(5);
         
         if(!docs) return res.status(400).json({msg:'Not able to search.'});

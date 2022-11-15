@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const {ObjectId} = mongoose.Schema.Types;
 
 const commentSchema = new mongoose.Schema({
+    postId:{
+        type: ObjectId,
+        ref: "posts"
+    },
     author:{ 
         type: String,
         required:true
@@ -17,7 +21,10 @@ const commentSchema = new mongoose.Schema({
     childId:[{
         type:ObjectId,
         ref:"comments"
-    }]
+    }],
+    createdAt:{
+        type: Number
+    }
 });
 
 

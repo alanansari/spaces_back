@@ -6,10 +6,11 @@ const mongoose = require('mongoose');
 const authverifytoken=async (req,res,next)=>{
   try{
     let token=req.headers['accesstoken'] || req.headers['authorization'];
-    token = token.replace(/^Bearer\s+/, "");
+    
     if(!token)
       return res.status(409).json({sucess:false,msg:"Please login/signup before proceeding"});
     else{
+      token = token.replace(/^Bearer\s+/, "");
       const verify=await jwt.verify(token,process.env.jwtsecretkey1,async (err,payload)=>{
         if(err){
           return res.status(409).json({sucess:false,msg:"Invalid account"});  
