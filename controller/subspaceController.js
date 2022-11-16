@@ -283,6 +283,28 @@ const search = async (req,res) => {
 }
 
 
+const userinfo = async (req,res) => {
+    try {
+
+        const {user_name,mysubspaces} = req.user;
+
+        let topcomm = await subSpace.aggregate([
+            {$unwind:"$members"},
+            { 
+             $group :{_id:'$_id',
+             name:{ "$first": "$name" },
+             members:{$sum:1},
+             createdAt:{ "$first": "$createdAt" }}
+            },
+            {$sort:{members: -1,createdAt: -1}}
+        ]).limit(5);
+
+        return res.status(200).json({user_name,mysubspaces,topcomm})
+    } catch (err) {
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
+}
+
 module.exports = {
     newsubspace,
     viewsubspace,
@@ -291,5 +313,6 @@ module.exports = {
     search,
     unfollow,
     topcommunities,
-    moretopcommunities
+    moretopcommunities,
+    userinfo
 }

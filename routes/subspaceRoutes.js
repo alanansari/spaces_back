@@ -14,6 +14,8 @@ router.put('/follow',validation.authverifytoken,subspaceController.follow);
 
 router.put('/unfollow',validation.authverifytoken,subspaceController.unfollow);
 
+router.get('/userinfo',validation.authverifytoken,subspaceController.userinfo);
+
 router.get('/topcommunities',subspaceController.topcommunities);
 
 router.get('/topcommunities/:num',subspaceController.moretopcommunities);
