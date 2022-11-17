@@ -251,7 +251,7 @@ const topcommunities=async (req,res)=>{
 const moretopcommunities=async (req,res)=>{
     try{
         const num=req.params.num;
-     const top=await subSpace.find().sort({"followers":-1}).skip(10*num).limit(10);
+        const top=await subSpace.find().sort({"followers":-1}).skip(10*num).limit(10);
 
 
         return res.status(200).json({top});
@@ -286,7 +286,7 @@ const search = async (req,res) => {
 const userinfo = async (req,res) => {
     try {
 
-        const {user_name,mysubspaces} = req.user;
+        const {user_name,mysubspaces,displaypic} = req.user;
 
         let topcomm = await subSpace.aggregate([
             {$unwind:"$members"},
@@ -299,7 +299,7 @@ const userinfo = async (req,res) => {
             {$sort:{members: -1,createdAt: -1}}
         ]).limit(5);
 
-        return res.status(200).json({user_name,mysubspaces,topcomm})
+        return res.status(200).json({user_name,displaypic,mysubspaces,topcomm})
     } catch (err) {
         return res.status(400).json({success:false,msg:`${err}`});
     }

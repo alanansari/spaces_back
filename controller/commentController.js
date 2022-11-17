@@ -47,20 +47,23 @@ const comment = async(req,res)=>{
 const getpostcomm = async(req,res) => {
     try {
         const postId = req.params.id;
-        const num = Number(req.params.num) || 0;
-        const post = await Post.findById(postId).populate('comments');
 
-        if(!post){
-            return res.status(404).json({success:false,msg:'Post not found.'});
-        }
+        // const num = Number(req.params.num) || 0;
+        // const post = await Post.findById(postId).populate('comments');
 
-        let {comments} = post;
+        // if(!post){
+        //     return res.status(404).json({success:false,msg:'Post not found.'});
+        // }
 
-        comments.sort((a,b)=>b.votes-a.votes);
+        // let {comments} = post;
 
-        comments = comments.slice(num*10,num*10+10);
+        // comments.sort((a,b)=>b.votes-a.votes);
 
-        return res.status(200).json({comments});
+        // comments = comments.slice(num*10,num*10+10);
+
+        const comment = await Comment.find({postId},{childId:0});
+
+        return res.status(200).json(comment);
 
     } catch (err) {
         return res.status(400).json({success:false,msg:`${err}`});
@@ -118,6 +121,7 @@ const reply = async (req,res) => {
 
         const comment = await Comment.create({
             author: user_name,
+            parentId:commId,
             postId,
             text,
             createdAt: Date.now()

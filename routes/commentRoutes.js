@@ -13,7 +13,7 @@ router.post('/comment',validation.authverifytoken,commentController.comment);
 router.get('/mycomments',validation.authverifytoken,commentController.mycomments);
 
 
-router.get('/:id/comments/:num',commentController.getpostcomm);
+router.get('/:id/comments',commentController.getpostcomm);
 
 
 // post reply on a comment
