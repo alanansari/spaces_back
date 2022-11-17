@@ -19,6 +19,11 @@ const commentSchema = new mongoose.Schema({
         type:Number,
         default: 0
     },
+    parentId:{
+        type:Object,
+        default: null,
+        ref:"comments"
+    },
     childId:[{
         type:ObjectId,
         ref:"comments"

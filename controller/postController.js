@@ -31,7 +31,8 @@ const newpost = async (req,res) => {
         const {subspace,heading,para} = req.body;
 
         let filepath = null;
-
+        if(para==='') para=null;
+        
         if(req.file !== undefined){
             filepath = 'uploads/' + req.file.filename;
         }
