@@ -235,6 +235,28 @@ const mycomments = async (req,res) => {
     }
 }
 
+const delcomm = async (req,res) => {
+    try {
+        const commId = req.params.id;
+        const {user_name} = req.user;
+        const comm = await Comment.findById(commId);
+        if(!comm)
+        return res.status(400).json({success:false,msg:"Comment not found."});
+        if(comm.author!=user_name){
+            return res.status(400).json({success:false,msg:"You are not the creator of this commment."});
+        }
+        const delcom = await Comment.updateOne({_id:commId},{
+            text:'[deleted]'
+        });
+
+        if(delcom)
+            return res.status(200).json({success:true,msg:"Deleted Comment."});
+
+    } catch (err) {
+        return res.status(400).json({success:false,msg:`${err}`});
+    }
+}
+
 
 module.exports = {
     comment,
@@ -245,5 +267,6 @@ module.exports = {
     cdownvote,
     cunupvote,
     cundownvote,
-    mycomments
+    mycomments,
+    delcomm
 }

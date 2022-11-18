@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const Post = require('../model/postModel');
 const subSpace = require('../model/subspaceModel');
+const Comment = require('../model/commentModel');
 const fs = require('fs');
 require('dotenv').config();
 const jwtsecret = process.env.jwtsecretkey1;
@@ -71,11 +72,34 @@ const getpost = async (req,res) => {
         
         const post = await Post.findById(postId);
 
+
         if(!post){
             return res.status(404).json({success:false,msg:'Post not found.'});
         }
 
-        return res.status(200).json(post);
+        let upvoted = false, downvoted = false;
+
+        if(req.user){
+
+            const user = await User.findById({_id:req.user._id});
+
+            for(let j=0;j<user.upvotes.length;j++){
+                if(post._id.toString()===user.upvotes[j].toString()){
+                    upvoted = true;
+                    break;
+                }
+            }
+
+            for(let j=0;j<user.downvotes.length;j++){
+                if(post._id.toString()===user.downvotes[j].toString()){
+                    downvoted = true;
+                    break;
+                }
+            }
+
+        }
+
+        return res.status(200).json({post,upvoted,downvoted});
 
     } catch(err) {
         console.log(err);
@@ -394,7 +418,7 @@ const dltpost=async (req,res)=>{
         const _id = req.params.id;
         let post = await Post.findById(_id);
         if(!post){
-            return res.status(404).json({success:true,msg:"Post to be deleted not found"});
+            return res.status(404).json({success:false,msg:"Post to be deleted not found"});
         }
 
         const subspace = post.subspace;
@@ -404,12 +428,16 @@ const dltpost=async (req,res)=>{
         if(req.user.user_name!==post.author&&req.user.user_name!==sub.admin){
             return res.status(400).json({success:false,msg:"You are not the creator of this post."});
         }
+        
         if(post.imgpath!=null){
             fs.unlinkSync('./'+post.imgpath);
         }
         post=await Post.deleteOne({_id});
-        if(!post){
-            return res.status(404).json({success:true,msg:"Post to be deleted not found"});
+    
+        const delcom = await Comment.deleteMany({postId:_id});
+
+        if(!delcom){
+            return res.status(404).json({success:false,msg:"Comment not deleted"});
         }
         
         return res.status(200).json({success:true,msg:"Post deleted"});

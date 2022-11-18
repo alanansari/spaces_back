@@ -23,6 +23,8 @@ router.post('/:id',validation.authverifytoken,commentController.reply);
 // router.get('/',commentController.replies);
 router.get('/:id/:num',commentController.replies);
 
+router.delete('/:id',validation.authverifytoken,commentController.delcomm);
+
 //comment id
 router.put('/cupvote',validation.authverifytoken,commentController.cupvote);
 router.put('/cunupvote',validation.authverifytoken,commentController.cunupvote);
