@@ -428,8 +428,8 @@ const dltpost=async (req,res)=>{
         if(req.user.user_name!==post.author&&req.user.user_name!==sub.admin){
             return res.status(400).json({success:false,msg:"You are not the creator of this post."});
         }
-        
-        if(post.imgpath!=null){
+
+        if(post.imgpath!=null&&fs.existsSync('./'+post.imgpath)){
             fs.unlinkSync('./'+post.imgpath);
         }
         post=await Post.deleteOne({_id});
