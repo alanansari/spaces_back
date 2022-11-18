@@ -28,7 +28,10 @@ router.put('/downvote',validation.authverifytoken,postController.downvote);
 
 router.put('/undownvote',validation.authverifytoken,postController.undownvote);
 
+router.get('/logged/:id',validation.authverifytoken,postController.getpost);
+
 router.get('/:id',postController.getpost);
+
 
 router.delete('/delete/:id',validation.authverifytoken,postController.dltpost);
 
