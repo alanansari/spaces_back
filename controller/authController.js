@@ -122,6 +122,7 @@ const login = async (req, res) => {
         return res.status(200).json({sucess: true,msg:`Welcome back! ${user.user_name}`,token});
   } catch (err) {
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
   }
 }
 
@@ -169,6 +170,7 @@ const forgotpassword=async (req,res)=>{
    }
    catch(err){
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
    }
 }
 
@@ -204,6 +206,7 @@ const changepassword=async (req,res)=>{
 
    catch(err){
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
    }
 }
 
@@ -239,6 +242,7 @@ const fverify = async (req,res) => {
      
   }catch(err){
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
   }
 }
 
@@ -407,6 +411,7 @@ const emailupdateotp=async (req,res)=>{
     }
   } catch(err) {
     console.log(err);
+    return res.status(400).json({success:false,msg:`${err}`});
   }
 }
 
@@ -427,7 +432,7 @@ const emailupdateotp=async (req,res)=>{
 
     } catch(err) {
       console.log(err);
-      return res.status(400).json(err);
+      return res.status(400).json({success:false,msg:`${err}`});
     }
 }
 
