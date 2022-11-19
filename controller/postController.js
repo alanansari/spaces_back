@@ -70,7 +70,7 @@ const getpost = async (req,res) => {
     try{
         const postId = req.params.id;
         
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId,{comments:0});
 
 
         if(!post){
@@ -382,7 +382,6 @@ const undownvote=async (req,res)=>{
         let bool = false;
     
         for(let j=0;j<arr.length;j++){
-            bool = false
             if(_id.toString()===arr[j].toString()){
                 bool = true;
                 break;
