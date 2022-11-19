@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const User = require('../model/userModel');
 const {Auth} = require('two-step-auth');
 const regexval = require("../middleware/validate");
+const mailer = require("../middleware/mailer");
+const otpGenerator = require('otp-generator')
 
 
 const signup = async (req,res)=>{
@@ -37,15 +39,19 @@ const signup = async (req,res)=>{
             return res.status(409).send({sucess:false,msg:"Username Already Exists."});
         }
 
-        // email verification
+        
+        const mailedOTP = otpGenerator.generate(6, {
+            upperCaseAlphabets: false,
+            specialChars: false,
+            lowerCaseAlphabets: false
+          });
+
         login(email);
 
-        let mailedOTP;
         async function login(emailId){
-          const result =  await Auth(emailId, "Spaces");
-          if(result.success==true){
+          const result = mailer.sendmail(emailId,mailedOTP);
+          if(result){
             console.log('mail sent.');
-            mailedOTP = result.OTP;
             const expiresat = Date.now() + 300000;
             // encrypting password
               const encryptedPassword = await bcrypt.hash(password, 12);
@@ -76,11 +82,13 @@ const signup = async (req,res)=>{
 
           }else{
             console.log('mail not sent.');
+            return res.status(400).json({success:false,msg:`${result}`});
           }
         }
 
     } catch (err) {
       console.log(err);
+      return res.status(400).send({sucess:false,msg:`${err}`});
     }
 }
 
@@ -130,23 +138,26 @@ const forgotpassword=async (req,res)=>{
     if (!user||user.email_verify==false) return res.status(409)
       .json({sucess:false,msg:"This email doesn't have an account"});
 
+    
+
+    const mailedOTP = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false
+    });
+
     sendotp(email);
 
-    let mailedOTP2;
-
-
     async function sendotp(emailId){
-      const result =  await Auth(emailId, "Spaces");
-      if(result.success==true){
+      const result = mailer.sendmail(emailId,mailedOTP);
+      if(result){
         console.log('mail sent.');
-        mailedOTP2 = result.OTP;
         const expiresat = Date.now() + 300000;
-        const token=jwt.sign({user_name:user.user_name},process.env.jwtsecretkey1,{expiresIn:"1d"})
+        
         const updated=await User.updateOne({email:email.toLowerCase()},{
           $set:{
-            mailedOTP:mailedOTP2.toString(),
-            expiryOTP: expiresat,
-            token
+            mailedOTP:mailedOTP.toString(),
+            expiryOTP: expiresat
           }
         });
 
