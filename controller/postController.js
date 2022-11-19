@@ -70,7 +70,7 @@ const getpost = async (req,res) => {
     try{
         const postId = req.params.id;
         
-        const post = await Post.findById(postId,{comments:0});
+        const post = await Post.findById(postId);
 
 
         if(!post){
